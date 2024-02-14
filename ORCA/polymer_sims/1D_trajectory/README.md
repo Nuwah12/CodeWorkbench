@@ -3,9 +3,9 @@
 ##### Once the simulation finishes, the necessary calculated information is stored in a `trajectories/` folder, which is then used as input into the 3D (molecular dynamics) part of the simulation.
 
 #### Parameters:
-`SMCs` - Number of cohesins to load onto the polymer
-`ctcfRight/LeftRelease/Capture` - Dictionaries with CTCF position as key and load/unload probability as value
-`Lifetime`/`Lifetime_stalled` - Inverse probability of COHESIN unloading
+* `SMCs` - Number of cohesins to load onto the polymer
+* `ctcfRight/LeftRelease/Capture` - Dictionaries with CTCF position as key and load/unload probability as value
+* `Lifetime`/`Lifetime_stalled` - Inverse probability of COHESIN unloading
 
 #### Workflow:
 1. Load cohesin 
