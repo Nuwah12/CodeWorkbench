@@ -12,6 +12,6 @@
     b. **Load cohesin** - With probability `p`, mark occupancy at legs as 1 \
     c. **Translocate cohesin** - As long as the cohesin can move (i.e. it is not located next to another cohesin and is not at the end of the polymer), mark legs +/- 1 as occupied, and current legs as unoccupied, 'extruding' the loop through the cohesin ring.
 
-Files in this directory:
-`extrusion_1D_trajectory_example.ipynb` - An example setting up necessary functions for cohesin behavior and demonstrating 1D extrusion with a small polymer, printing progress messages so that an inutition of the process can be formed. No trajectory is saved.
+Files in this directory: \
+* `extrusion_1D_trajectory_example.ipynb` - An example setting up necessary functions for cohesin behavior and demonstrating 1D extrusion with a small polymer, printing progress messages so that an inutition of the process can be formed. No trajectory is saved.
     
