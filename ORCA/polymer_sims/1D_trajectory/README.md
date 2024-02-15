@@ -13,7 +13,7 @@
     * If `point` and `point+1` are unoccupied, mark them as occupied, else, choose a different point
     * Append a `cohesin(point, point+1)` object to the cohesin list
 2. Translocate cohesin \
-    a. **Unload cohesin** - With probability `q`, mark occupancy at legs as 0 \
+    a. **Unload cohesin** - With probability `1/Lifetime`, or `1/Lifetime_stalled` if cohesin is stalled, mark occupancy at legs as 0. \
     b. **Load cohesin** - With probability `p`, mark occupancy at legs as 1 \
     c. **Translocate cohesin** - As long as the cohesin can move (i.e. it is not located next to another cohesin and is not at the end of the polymer), mark legs +/- 1 as occupied, and current legs as unoccupied, 'extruding' the loop through the cohesin ring.
 
