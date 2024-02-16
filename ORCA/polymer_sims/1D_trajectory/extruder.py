@@ -56,6 +56,10 @@ class Extruder():
         """
         # 1 - attempt to unload LEF
         unload_prob = self.getUnloadProb()
+        if np.random.random() < unload_prob:
+            self.occupied[self.leg1.pos] = 0
+            self.occupied[self.leg2.pos] = 0
+            self.loadNew()
         # 2 - attemp to capture and release blockers
         self.capture()
         self.release()
@@ -73,6 +77,10 @@ class Extruder():
         if self._any('stalled'):
             return 1/self.lifetime_stalled
         return 1/self.lifetime
+    def loadNew(self):
+        """
+        TODO: function to initialize new leg positions after LEF is unloaded
+        """
     class ExtruderLeg():
         """
         Class defining one side / 'leg' of a loop extruder
