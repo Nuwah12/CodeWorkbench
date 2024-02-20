@@ -1,7 +1,7 @@
 import numpy as np
 
 class Extruder():
-    def __init__(self, leg1, leg2, ebf1, left_blockers, right_blockers, extrusion_occupancy, lifetime=100, lifetime_stalled=10):
+    def __init__(self, leg1, leg2, ebf1, left_blockers_capture, right_blockers_capture, left_blockers_release, right_blockers_release, extrusion_occupancy, lifetime=100, lifetime_stalled=10):
         """
         Class defining a generic Loop Extrusion Factor (LEF)
         Parameters:
@@ -14,9 +14,12 @@ class Extruder():
         self.leg1 = self.ExtruderLeg(leg1, -1)
         self.leg2 = self.ExtruderLeg(leg2, 1)
         self.ebf1 = ebf1
-        self.blockers = {-1:left_blockers, 1:right_blockers}
-        self.stalled = stalled
+        self.blockers_capture = {-1:left_blockers_capture, 1:right_blockers_capture}
+        self.blockers_release = {-1:left_blockers_release, 1:right_blockers_release}
         self.occupied = extrusion_occupancy
+
+        self.occupied[self.leg1.pos] = 1
+        self.occupied[self.leg2.pos] = 1
 
         self.lifetime = lifetime
         self.lifetime_stalled = lifetime_stalled
@@ -35,19 +38,28 @@ class Extruder():
         """
         Attempt to 'capture' a LEF with a blocker
         """
-        for leg in [self.leg1, self.leg2]:
-            if np.random.random() < self.blockers[leg.side].get(leg.pos, 0):
-                leg.attrs['captured'] = True
+        #print('Starting capture, leg info:\n')
+        #self.printLegInfo()
+        legs = [self.leg1, self.leg2]
+        for i in range(len(legs)):
+            p = np.random.random()
+            #print('Capture prob. for leg {} at pos {}: {}'.format(leg.side, leg.pos, self.blockers_capture[leg.side].get(leg.pos, 0)))
+            if p < self.blockers_capture[legs[i].side].get(legs[i].pos, 0):
+                print('Leg {} captured at pos {} with prob. {}'.format(legs[i].side, legs[i].pos, p))
+                legs[i].setAttribute('captured',True)
     def release(self):
         """
         And attempt to release an LEF captured by a blocker
         """
         if not self._any('captured'):
+            #print('No captured legs, not trying to release...')
             return
         for leg in [self.leg1, self.leg2]:
-            if (np.random.random() < self.blockers[leg.side].get(leg.pos, 0)) and (leg.attrs['captured']):
+            p = np.random.random()
+            if (p < self.blockers_release[leg.side].get(leg.pos, 0)):
+                print('Leg {} released at pos {} with prob {}'.format(leg.side, leg.pos, p))
                 leg.attrs['captured'] = False
-    def translocate(self):
+    def translocate(self, occupied):
         """
         The main function. Performs 3 main functions:
             1. Attempts to unload LEFs with prob. 1/lifetime (1/stalled_lifetime if stalled)
@@ -57,6 +69,7 @@ class Extruder():
         # 1 - attempt to unload LEF
         unload_prob = self.getUnloadProb()
         if np.random.random() < unload_prob:
+            print('Unloading cohesin at pos {}, {}'.format(self.leg1.pos, self.leg2.pos))
             self.occupied[self.leg1.pos] = 0
             self.occupied[self.leg2.pos] = 0
             self.loadNew()
@@ -65,14 +78,19 @@ class Extruder():
         self.release()
         # 3 - translocate cohesin
         for leg in [self.leg1, self.leg2]:
+            #print('Leg {}: captured = {}'.format(leg.pos, leg.attrs['captured']))
             if not leg.attrs['captured']:
-                if self.occupied[leg.pos + leg.side] != 0:
+                if (leg.pos + leg.side) >= len(self.occupied) or self.occupied[leg.pos + leg.side] != 0:
+                    print('Leg {} stalled at pos {}'.format(leg.side, leg.pos))
                     leg.attrs['stalled'] = True
                 else:
+                    print('Leg at {} translocating'.format(leg.pos))
                     leg.attrs['stalled'] = False
                     self.occupied[leg.pos] = 0
-                    self.occupied[led.pos + leg.side] = 1
+                    self.occupied[leg.pos + leg.side] = 1
+                    #print(self.occupied)
                     leg.pos += leg.side
+        return self.occupied
     def getUnloadProb(self):
         if self._any('stalled'):
             return 1/self.lifetime_stalled
@@ -81,15 +99,34 @@ class Extruder():
         """
         TODO: function to initialize new leg positions after LEF is unloaded
         """
+        while True:
+            pos = np.random.randint(len(self.occupied)-1)
+            if self.occupied[pos] != 1 and self.occupied[pos+1] != 1:
+                break
+        self.leg1.pos = pos
+        self.leg2.pos = pos+1
+        # Reset leg attributes
+        for leg in [self.leg1, self.leg2]:
+            leg.attrs['captured'] = False
+            leg.attrs['stalled'] = False
+        self.occupied[pos] = 1
+        self.occupied[pos+1] = 1
+    def printLegInfo(self):
+        for leg in [self.leg1, self.leg2]:
+            s = "Leg {}:\nPosition: {}\n Captured: {}\n Stalled: {}\n".format(leg.side, leg.pos, leg.attrs['captured'], leg.attrs['stalled'])
+            print(s)
     class ExtruderLeg():
         """
         Class defining one side / 'leg' of a loop extruder
         Conceptually, the extruder will be contacting two points on the polymer as it pulls two distal locations closer (like a cohesin ring)
         """
-        def __init__(self, pos, side, attrs = {'stalled':False,'captured':False}):
+        def __init__(self, pos, side, attrs = None):
             self.pos = pos
             self.side = side
-            self.attrs = attrs
+            if attrs is None:
+                self.attrs = {'stalled': False, 'captured': False}
+        def setAttribute(self, attribute, value):
+            self.attrs[attribute] = value
 
 if __name__ == "__main__":
     pass
