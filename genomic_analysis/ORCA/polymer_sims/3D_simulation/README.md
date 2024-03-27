@@ -31,3 +31,8 @@ And for *inactive* bonds: \
         rsc2 = rsc * rsc;
         rsc = r / radius * rmin12;
     ```
+### Visualizing conformations
+This is the workflow I use to go from simulation outputs (conformations) to an NxN aggregate matrix showing contact frequency.
+1. Run a simulation. This will output as many 'blocks' as the number of simulation initializations you did in `.h5` format.
+2. Use `trajectory_to_txt.py <total number of confs> <path to h5> <matrix our DIR>` to dump `.h5` files to text.
+3. Run `python3 make_contactMaps <dir of confs> <matrix out file>` to obtain the aggregate matrix. Plot with your favorite plotting library.
