@@ -1,7 +1,8 @@
 import numpy as np
+import sys
 
 class Extruder():
-    def __init__(self, leg1, leg2, ebf1, left_blockers_capture, right_blockers_capture, left_blockers_release, right_blockers_release, extrusion_occupancy, lifetime=100, lifetime_stalled=10):
+    def __init__(self, extruder_index, leg1, leg2, left_blockers_capture, right_blockers_capture, left_blockers_release, right_blockers_release, extrusion_occupancy, lifetime=100, lifetime_stalled=10, targeted_loading=False, loading_spots=None, loading_dist=None):
         """
         Class defining a generic Loop Extrusion Factor (LEF)
         Parameters:
@@ -10,10 +11,28 @@ class Extruder():
             ebf1 - boolean, is ebf1 present?
             left/right_ blockers - dicts: each dict of form {pos:prob}, where pos is position of blocker and prob is capture probability [0,1]. Left-facing blockers and right-facing in respective dicts
             extrusion_occupancy - list of ints, denotes positions on polymer that are occupied by an extruder
+            targeted_loading - boolean, are extruders to be loaded at predetermined positions?
+            loading_spots - list, all loading index positions for all extruders
+            loading_dist - list, probabilities of loading at each spot 
         """
+        self.ex_index = extruder_index 
+        # Checks
+        if (not targeted_loading and loading_spots != None) or (targeted_loading and loading_spots == None):
+            print('ERROR - Please specify both targeted loading as true AND a list of ALL loading spots for ALL extruders.')
+            sys.exit(1)
+        if targeted_loading: # If we have specified loading, we will first load the extruders at their defined spots 
+            self.targeted_loading = targeted_loading
+            self.loading_spots = loading_spots
+            leg1 = loading_spots[self.ex_index]
+            leg2 = leg1+1
+            self.nLEF = len(loading_spots)
+            if loading_dist == None:
+                self.loading_dist = np.linspace(1/self.nLEF, 1, num=len(loading_spots))
+            else:
+                self.loading_dist = loading_dist
+            
         self.leg1 = self.ExtruderLeg(leg1, -1)
         self.leg2 = self.ExtruderLeg(leg2, 1)
-        self.ebf1 = ebf1
         self.blockers_capture = {-1:left_blockers_capture, 1:right_blockers_capture}
         self.blockers_release = {-1:left_blockers_release, 1:right_blockers_release}
         self.occupied = extrusion_occupancy
@@ -45,7 +64,7 @@ class Extruder():
             p = np.random.random()
             #print('Capture prob. for leg {} at pos {}: {}'.format(leg.side, leg.pos, self.blockers_capture[leg.side].get(leg.pos, 0)))
             if p < self.blockers_capture[legs[i].side].get(legs[i].pos, 0):
-                print('Leg {} captured at pos {} with prob. {}'.format(legs[i].side, legs[i].pos, p))
+                #print('Leg {} captured at pos {} with prob. {}'.format(legs[i].side, legs[i].pos, p))
                 legs[i].setAttribute('captured',True)
     def release(self):
         """
@@ -57,7 +76,7 @@ class Extruder():
         for leg in [self.leg1, self.leg2]:
             p = np.random.random()
             if (p < self.blockers_release[leg.side].get(leg.pos, 0)):
-                print('Leg {} released at pos {} with prob {}'.format(leg.side, leg.pos, p))
+                #print('Leg {} released at pos {} with prob {}'.format(leg.side, leg.pos, p))
                 leg.attrs['captured'] = False
     def translocate(self, occupied):
         """
@@ -69,7 +88,7 @@ class Extruder():
         # 1 - attempt to unload LEF
         unload_prob = self.getUnloadProb()
         if np.random.random() < unload_prob:
-            print('Unloading cohesin at pos {}, {}'.format(self.leg1.pos, self.leg2.pos))
+            #print('Unloading cohesin at pos {}, {}'.format(self.leg1.pos, self.leg2.pos))
             self.occupied[self.leg1.pos] = 0
             self.occupied[self.leg2.pos] = 0
             self.loadNew()
@@ -81,10 +100,10 @@ class Extruder():
             #print('Leg {}: captured = {}'.format(leg.pos, leg.attrs['captured']))
             if not leg.attrs['captured']:
                 if (leg.pos + leg.side) >= len(self.occupied) or self.occupied[leg.pos + leg.side] != 0:
-                    print('Leg {} stalled at pos {}'.format(leg.side, leg.pos))
+                    #print('Leg {} stalled at pos {}'.format(leg.side, leg.pos))
                     leg.attrs['stalled'] = True
                 else:
-                    print('Leg at {} translocating'.format(leg.pos))
+                    #print('Leg at {} translocating'.format(leg.pos))
                     leg.attrs['stalled'] = False
                     self.occupied[leg.pos] = 0
                     self.occupied[leg.pos + leg.side] = 1
@@ -100,7 +119,12 @@ class Extruder():
         TODO: function to initialize new leg positions after LEF is unloaded
         """
         while True:
-            pos = np.random.randint(len(self.occupied)-1)
+            if self.targeted_loading: # This is where the ""magic"" happens for targeted loading!
+                p = np.random.random()
+                idx = next(x for x, val in enumerate(self.loading_dist) if val > p)
+                pos = self.loading_spots[idx]
+            else:    
+                pos = np.random.randint(len(self.occupied)-1)
             if self.occupied[pos] != 1 and self.occupied[pos+1] != 1:
                 break
         self.leg1.pos = pos
