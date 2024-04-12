@@ -16,12 +16,12 @@ class Extruder():
             loading_dist - list, probabilities of loading at each spot 
         """
         self.ex_index = extruder_index 
+        self.targeted_loading = targeted_loading
         # Checks
         if (not targeted_loading and loading_spots != None) or (targeted_loading and loading_spots == None):
             print('ERROR - Please specify both targeted loading as true AND a list of ALL loading spots for ALL extruders.')
             sys.exit(1)
         if targeted_loading: # If we have specified loading, we will first load the extruders at their defined spots 
-            self.targeted_loading = targeted_loading
             self.loading_spots = loading_spots
             leg1 = loading_spots[self.ex_index]
             leg2 = leg1+1
