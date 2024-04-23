@@ -42,6 +42,6 @@ And for *inactive* bonds: \
     ```
 ### Visualizing conformations
 This is the workflow I use to go from simulation outputs (conformations) to an NxN aggregate matrix showing contact frequency.
-1. Run a simulation. This will output as many 'blocks' as the number of simulation initializations you did in `.h5` format.
-2. Use `trajectory_to_txt.py <total number of confs> <path to h5> <matrix our DIR>` to dump `.h5` files to text, where the total number of conformations is the total number of 'blocks' saved by your simulation.
+1. Run a simulation. This will output as many 'blocks' as the number of simulation initializations you did in `.h5` format times the number of times you save conformations in each smulation run.
+2. Use `python3 trajectory_to_txt.py <total number of confs> <path to h5> <matrix our DIR>` to dump `.h5` files to text, where the total number of conformations is the total number of 'blocks' saved by your simulation.
 3. Run `python3 make_contactMaps <dir of confs> <matrix out file>` to obtain the aggregate matrix, where the specified input directory holds the previously created text files. Plot with your favorite plotting library.
