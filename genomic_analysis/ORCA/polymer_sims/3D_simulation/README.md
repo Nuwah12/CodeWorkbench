@@ -40,6 +40,8 @@ And for *inactive* bonds: \
         rsc2 = rsc * rsc;
         rsc = r / radius * rmin12;
     ```
+### Energy Minimization
+Before each simulation initialization, the initial (random) polymer conformation undergoes energy minimization. For a good introduction, I recommend (this paper)[https://dasher.wustl.edu/chem430/readings/leach-minimization.pdf]
 ### Visualizing conformations
 This is the workflow I use to go from simulation outputs (conformations) to an NxN aggregate matrix showing contact frequency.
 1. Run a simulation. This will output as many 'blocks' as the number of simulation initializations you did in `.h5` format times the number of times you save conformations in each smulation run.
