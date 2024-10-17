@@ -3,7 +3,7 @@
 
 # ### Simple MD (3D) simulation
 
-# In[41]:
+# In[4]:
 
 
 import time
@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 # ### Define parameters for 3D portion
 
-# In[42]:
+# In[5]:
 
 
 ### Gather parameters from the 1D portion
@@ -62,7 +62,7 @@ Each simulation run will produce {} conformations, for a total of {} conformatio
 
 # ### The Simulation Loop
 
-# In[43]:
+# In[6]:
 
 
 milker = bondUpdater(LEFpositions)
@@ -132,3 +132,10 @@ for iter in range(simInitsTotal):
     time.sleep(0.2) # wait so garbage collector can clean up
 
 reporter.dump_data() # Output
+
+
+# In[ ]:
+
+
+
+
