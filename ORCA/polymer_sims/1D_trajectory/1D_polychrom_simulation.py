@@ -4,7 +4,7 @@
 # ## 1-D loop extrusion simulation
 # ### !!! Make sure you run the cells IN ORDER !!!
 
-# In[76]:
+# In[6]:
 
 
 from extruder import Extruder
@@ -17,10 +17,10 @@ import sys
 
 # ### Translocating and writing trajectories using custom extruder class
 
-# In[77]:
+# In[7]:
 
 
-RUN_NAME = "scenario19_v8" #### Define a name for this simulation run, sowe can save parameters
+RUN_NAME = "MYC_SemiPerturb_highBlock_lowLEF" #### Define a name for this simulation run, sowe can save parameters
 N1 = 900 # Size of 1 system
 M = 1 # No. of systems
 N = N1*M # Total size of system, in momomers
@@ -28,7 +28,7 @@ occupied = np.zeros(N) # List to tell if current monomer is occupied by an extru
 occupied[0] = 1 
 occupied[-1] = 1
 steps = 50000 # Timesteps for 1D sim.
-LEFNum = 15 # No. of RANDOMLY LOADED extruders
+LEFNum = 8 # No. of RANDOMLY LOADED extruders
 num_chunks = 50 # No. of chunks to write trajectories in
 
 ### Blockers (i.e. CTCF) - {pos. : prob.}
@@ -37,37 +37,44 @@ right_blockers_capture = {}
 left_blockers_release = {}
 right_blockers_release = {}
 ## Here we define strong, mild, and weak [blocking, release]
-STRONG_BLOCK = [0.999, 10**-10]
-MEDIUM_BLOCK = [0.5, 0.02]
-WEAK_BLOCK = [0.2, 0.025]
+# WT blocking strengths
+#STRONG_BLOCK = [0.999, 0.0001]
+#MEDIUM_BLOCK = [0.75, 0.001]
+#WEAK_BLOCK = [0.25, 0.025]
+# Perturbation blocking strengths
+#STRONG_BLOCK_p = [0.75, 0.01]
+#MEDIUM_BLOCK_p = [0.5, 0.02]
+#WEAK_BLOCK_p = [0.2, 0.03]
+TIER1_BLOCK = [0.99, 0.0001]
+TIER2_BLOCK = [0.75, 0.01]
+TIER3_BLOCK = [0.5, 0.015]
+#TIER3_BLOCK_V2 = [0.4, 0.02]
+TIER4_BLOCK = [0.25, 0.03]
 # Manually assigning blockers in dict
-#left_blockers_capture[10] = STRONG_BLOCK[0] # 5' CTCF
-#left_blockers_release[10] = STRONG_BLOCK[1]
-left_blockers_capture[195] = STRONG_BLOCK[0] # E1a
-left_blockers_release[195] = STRONG_BLOCK[1]
-left_blockers_capture[225] = STRONG_BLOCK[0] # E1b
-left_blockers_release[225] = STRONG_BLOCK[1]
-left_blockers_capture[315] = MEDIUM_BLOCK[0] # E2
-left_blockers_release[315] = MEDIUM_BLOCK[1]
-left_blockers_capture[405] = WEAK_BLOCK[0] # B1
-left_blockers_release[405] = WEAK_BLOCK[1]
-left_blockers_capture[555] = MEDIUM_BLOCK[0] # B3
-left_blockers_release[555] = MEDIUM_BLOCK[1]
-#left_blockers_capture[735] = STRONG_BLOCK[0] # MYC promoter
-#left_blockers_release[735] = STRONG_BLOCK[1]
+# Boundary is ~half a probe away from E1.1, so we will put it at the END of Probe 6 (30*6=180)
+left_blockers_capture[165] = TIER1_BLOCK[0] # Boundary -- CENTER OF PROBE 6 -- SHOULD NOT CHANGE **
+left_blockers_release[165] = TIER1_BLOCK[1]
+left_blockers_capture[180] = TIER1_BLOCK[0] # E1.1 -- BEGINNING OF OF PROBE 7 (BiD) -- SHOULD NOT CHANGE **
+left_blockers_release[180] = TIER1_BLOCK[1]
+left_blockers_capture[210] = TIER1_BLOCK[0] # E1.2 -- EBF1 -- BEGINNING OF PROBE 8 (BiD) -- DECREASES
+left_blockers_release[210] = TIER1_BLOCK[1]
+left_blockers_capture[315] = TIER3_BLOCK[0] # E2 -- EBF1 -- CENTER OF PROBE 11 (BiD) - DRAMATICALLY DECREASES
+left_blockers_release[315] = TIER3_BLOCK[1]
+left_blockers_capture[405] = TIER4_BLOCK[0] # B1 -- CENTER OF PROBE 14 -- SHOULD NOT CHANGE **
+left_blockers_release[405] = TIER4_BLOCK[1]
+left_blockers_capture[555] = TIER2_BLOCK[0] # B3 -- EBF1 -- CENTER OF PROBE 19 (BiD) -- DECREASES
+left_blockers_release[555] = TIER2_BLOCK[1]
 
-#right_blockers_capture[10] = STRONG_BLOCK[0] # 5' CTCF
-#right_blockers_release[10] = STRONG_BLOCK[1]
-#right_blockers_capture[195] = STRONG_BLOCK[0] # E1
-#right_blockers_release[195] = STRONG_BLOCK[1]
-right_blockers_capture[315] = WEAK_BLOCK[0] # E2
-right_blockers_release[315] = WEAK_BLOCK[1]
-right_blockers_capture[495] = WEAK_BLOCK[0] # B2
-right_blockers_release[495] = WEAK_BLOCK[1]
-#right_blockers_capture[555] = MILD_BLOCK[0] # B3
-#right_blockers_release[555] = MILD_BLOCK[1]
-right_blockers_capture[735] = STRONG_BLOCK[0] # MYC promoter
-right_blockers_release[735] = STRONG_BLOCK[1]
+right_blockers_capture[210] = TIER1_BLOCK[0] # E1.2 -- EBF1 -- BEGINNING OF PROBE 8 (BiD) -- DECREASES
+right_blockers_release[210] = TIER1_BLOCK[1]
+right_blockers_capture[315] = TIER3_BLOCK[0] # E2 -- EBF1 -- CENTER OF PROBE 11 (BiD) -- DRAMATICALLY DECREASES
+right_blockers_release[315] = TIER3_BLOCK[1]
+right_blockers_capture[495] = TIER4_BLOCK[0] # B2 -- CENTER OF PROBE 17 -- SHOULD NOT CHANGE **
+right_blockers_release[495] = TIER4_BLOCK[1]
+right_blockers_capture[555] = TIER2_BLOCK[0] # B3 -- EBF1 -- CENTER OF PROBE 19 (BiD) -- DECREASES
+right_blockers_release[555] = TIER2_BLOCK[1]
+right_blockers_capture[735] = TIER1_BLOCK[0] # MYC promoter -- CENTER OF PROBE 25 -- SHOULD NOT CHANGE **
+right_blockers_release[735] = TIER1_BLOCK[1]
 
 #for i in range(M):
 #    for locs in left_blocker_locs:
@@ -80,7 +87,7 @@ right_blockers_release[735] = STRONG_BLOCK[1]
 #        right_blockers_release[pos] = 0.01
 
 
-# In[78]:
+# In[8]:
 
 
 EXTRUDERS = []
@@ -143,11 +150,11 @@ for i in range(len(LOADING_SPOTS)):
             targeted_idx+=1
 
 
-# In[79]:
+# In[9]:
 
 
 ### Write parameters to text file
-with open('/mnt/data0/noah/analysis/misc-analysis-local/ORCA/polymer_sims/3D_simulation/{}_params.txt'.format(RUN_NAME),'w') as pf:
+with open('/mnt/data0/noah/analysis/misc-analysis-local/ORCA/polymer_sims/MYC/3D_simulation/{}_params.txt'.format(RUN_NAME),'w') as pf:
     pf.write("N: {}\n1D Steps: {}\nTotal LEF: {}\nTargeted: {} Probs: {}\nLifetime: {} Lifetime stalled: {}\nLeft cap: {}, Left rel: {}\nRight cap: {}, Right rel: {}".format(
                                                                                             N1,steps,LEFNum,
                                                                                             TARGETED_LOADING_SPOTS,LOADING_PROBS,
@@ -155,7 +162,7 @@ with open('/mnt/data0/noah/analysis/misc-analysis-local/ORCA/polymer_sims/3D_sim
                                                                                             right_blockers_capture,right_blockers_release))
 
 
-# In[80]:
+# In[10]:
 
 
 outf = "trajectory/LEFPositions.h5"
