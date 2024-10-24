@@ -15,7 +15,7 @@ rm(counts, ctrl.1, ctrl.2, ko.1, ko.2)
 colData <- data.frame(row.names = colnames(all.chip), 'condition' = c('control','control','KO','KO'))
 
 FCthresh <- 0.5
-pvalThresh <- 0.01
+pvalThresh <- 10E-4
 
 r <- as.data.frame(do.deseq2(counts=all.chip, colData=colData, comparison=c('condition', 'KO','control')))
 r$sig <- ifelse((r$log2FoldChange <= -FCthresh | r$log2FoldChange >= FCthresh) & (r$padj <= pvalThresh), TRUE, FALSE)
@@ -24,11 +24,17 @@ r$diff <- ifelse(r$sig, ifelse(r$log2FoldChange <= -FCthresh, 'Down in KO', 'Up 
 down.ko <- nrow(subset(r, diff=='Down in KO'))
 up.ko <- nrow(subset(r, diff=='Up in KO'))
 
+r$Anno = ''
+r[row.names(r) == 'chr8_128292058_128295790',]$Anno <- 'E2'
+r[row.names(r) == 'chr8_128295872_128297647',]$Anno <- 'E2'
+r[row.names(r) == 'chr8_128403178_128404957',]$Anno <- 'E3'
+
 pdf('010924_MB1576Cas9_H3K27ac-CnR_KO-over-Control_volcano.pdf')
 ggplot(data=r, aes(x=log2FoldChange, y=-log10(padj), col=diff))+
   geom_point(alpha=0.75)+
   annotate("text", label="1209", x=-1.5, y=65, size=5)+
   annotate("text", label="613", x=1.5, y=65, size=5)+
+  geom_text(aes(label=Anno),color='black',size=5)+
   scale_color_manual(values=c('red','gray','blue'))+
   geom_hline(yintercept=-log10(pvalThresh), linetype="dashed")+
   geom_vline(xintercept=c(-FCthresh, FCthresh), linetype="dashed")+

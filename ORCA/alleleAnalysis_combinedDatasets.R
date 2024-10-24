@@ -1,7 +1,7 @@
 library(NMF)
 library(zoo)
 setwd('/mnt/data0/noah/analysis/ORCA_analysis/allele_clustering')
-source('processChrTracer.R')
+source('ChrTracer3_processing/processChrTracer.R')
 # Read in x,y,z coords for untreated and treated 
 untreated.1 <- process.chrtracer('ChTracer3_output/comparisonRuns/230718_Grant519cl27_0hr_reverse_boxSize.csv', 
                                  30, T, coords=TRUE)
@@ -222,4 +222,11 @@ treated.ratios <- unlist(lapply(treated.dists, function(x){return(x[11,25]/mean(
 
 
 
+
+
+
+########## Calculate centrality vectors: vector of distances from each probe to the center (avg. x,y,z) of the trace
+source('scripts/centrality.R')
+untreated.centrality <- colMedians(trace.centrality(untreated), useNames=TRUE)
+treated.centrality <- colMedians(trace.centrality(treated), useNames=TRUE)
 

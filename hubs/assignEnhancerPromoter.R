@@ -16,17 +16,17 @@ p0 <- theme_bw() + theme(plot.title = element_text(hjust = 0.5),
 ###############################################################
 
 # Setup enhancer and promoter regions + gene expression
-setwd("/mnt/data0/noah/analysis/033023_loopAnalysis/EBF1_HiChIP_cliques")
-source('graph_libs.R')
-source('modularity.R')
-h3k27ac.slopped <- read.table('S01_170114_MB157_DMSO_H3K27ac_22375365_R1_001-MACS2-FDR_1e-8-SHIFT_93_summits_slopped.bed', sep = '\t', 
+setwd("/mnt/data0/noah/analysis/misc-analysis/hubs")
+source('/mnt/data0/noah/analysis/033023_loopAnalysis/EBF1_HiChIP_cliques/graph_libs.R')
+source('/mnt/data0/noah/analysis/033023_loopAnalysis/EBF1_HiChIP_cliques/modularity.R')
+h3k27ac.slopped <- read.table('/mnt/data0/noah/analysis/analysis_for_other_people/jr/S01_170114_MB157_DMSO_H3K27ac_22375365_R1_001-MACS2-FDR_1e-8-SHIFT_93_summits_slopped.bed', sep = '\t', 
                               col.names = c('chrom','start','end'))
 h3k27ac.slopped$id <- paste(h3k27ac.slopped$chrom,h3k27ac.slopped$start,h3k27ac.slopped$end,sep='_')
-tss.slopped <- read.table('190816_hg19_ensembl_ensg_TSS_5k.bed', sep = '\t', 
+tss.slopped <- read.table('/mnt/data0/noah/analysis/033023_loopAnalysis/EBF1_HiChIP_cliques/190816_hg19_ensembl_ensg_TSS_5k.bed', sep = '\t', 
                               col.names = c('chrom','start','end','gene'))
 rnaseq <- read.table('SOX9KO1_FDR0.01_log2FC0.50_all_sorted.tsv', sep = '\t',
                      header = T)
-connections <- read.table('171006_MB157_SMC1_MACS2_0.05_TAD_0.05_PET_4.mango',sep='\t',header=T)[,c(1:7,10)]
+connections <- read.table('MB157_DMSO_SMC1-HiChIP.interactions_FitHiC_Q0.05.bed',sep='\t',header=T)[,c(1:7)]
 #connections <- DMSO.anchor.keep[,c("p_chr","p_start","p_end","q_chr","q_start","q_end","pair.id","score")]
 ##########
 # Function to annotate anchors of a 3D genomic assay 
@@ -36,17 +36,17 @@ connections <- read.table('171006_MB157_SMC1_MACS2_0.05_TAD_0.05_PET_4.mango',se
 # rnaseq - data.frame of RNAseq results (ensembl_id, RPKM)
 # connections - data.frame of interacting anchor positions ('chrom1','start1','end1','chrom2','start2','end2','id','PET_count')
 ##########
-annotate.anchors <- function(tss.slopped, h3k27ac.slopped, rnaseq, connections, PET_thresh=4, RPKM.thresh=1){
+annotate.anchors <- function(tss.slopped, h3k27ac.slopped, connections, PET_thresh=4){
   # Enforce column names
-  colnames(connections) <- c('chrom1','start1','end1','chrom2','start2','end2','id','PET')
-  colnames(rnaseq) <- c('id','initial.expression')
+  colnames(connections) <- c('chrom1','start1','end1','chrom2','start2','end2','PET')
+  #colnames(rnaseq) <- c('id','initial.expression')
   
   # Filter connections by PET count
   connections <- subset(connections, PET >= 4)
   
   # Filter genes out of TSS list that are not in RNAseq
-  rnaseq <- subset(rnaseq, initial.expression >= 1)
-  tss.slopped <- subset(tss.slopped, gene %in% rnaseq$id)
+  #rnaseq <- subset(rnaseq, initial.expression >= 1)
+  #tss.slopped <- subset(tss.slopped, gene %in% rnaseq$id)
 
   # Identify which H3K27ac peaks are in TSS regions of expressed genes
   h3k.granges <- makeGRangesFromDataFrame(h3k27ac.slopped)
@@ -95,7 +95,7 @@ annotate.anchors <- function(tss.slopped, h3k27ac.slopped, rnaseq, connections, 
   
   return(anchors.annotated)
 }
-graph_communities_sizes <- function(annotated.anchors, cluster_resolution = 1, sh_out_name='super_hubs', seed=100){
+graph_communities_sizes <- function(annotated.anchors, cluster_resolution = 0.1, sh_out_name='super_hubs', seed=100){
   set.seed(seed=seed)
   network <- graph_from_data_frame(d = annotated.anchors, directed = FALSE)
   # Get communities
@@ -170,7 +170,7 @@ louvain_clustering <- function(edges, hubNum, antibody, resolution=1){
 #########################################################
 
 # Plot by community size
-ggplot(ebf1.smc1.hubSizes, aes(x = rank, y = size))+
+ggplot(communities[["sizes"]], aes(x = rank, y = size))+
   geom_point()+
   xlab("Community Ranking")+
   ylab("Community Size")+#ggplot(sizes_reorder, aes(x = rank, y = size, color = highlight))+
