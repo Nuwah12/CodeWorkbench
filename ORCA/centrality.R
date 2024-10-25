@@ -6,7 +6,6 @@
 
 # dat should be a list of XYZ coordinates with no NA values
 trace.centrality <- function(dat){
-	dat <- untreated
 	dat <- lapply(dat, as.matrix)
 	# get vector of distances from each (X,Y,Z) to the center
 	dist_to_center_per_probe <- function(matrix){
@@ -20,7 +19,3 @@ trace.centrality <- function(dat){
 	# Make centrality table (Traces X distances, y X 30)
 	return(do.call(rbind, centrality.vectors))
 }
-
-# Plot mean centrality of all traces
-mean.centrality <- colMeans(centrality)
-plot(mean.centrality, type="l")
