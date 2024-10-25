@@ -1,0 +1,9 @@
+N: 900
+1D Steps: 50000
+Total LEF: 15
+Targeted: [] Probs: [0.9, 0.1]
+Lifetime: 800 Lifetime stalled: 80
+Left cap: {165: 0.99, 180: 0.99, 210: 0.25, 315: 0.25, 405: 0.25, 555: 0.25}, Left rel: {165: 0.0001, 180: 0.0001, 210: 0.03, 315: 0.03, 405: 0.03, 555: 0.03}
+Right cap: {210: 0.25, 315: 0.25, 495: 0.25, 555: 0.25, 735: 0.99}, Right rel: {210: 0.03, 315: 0.03, 495: 0.03, 555: 0.03, 735: 0.0001}
+
+This simulation perturbs the previous Wild Type (run1) by ONLY weakening EBF1 blockers. Dots are lost along the stripe save for E1.1/boundary. Internal stripes are lost from E2 and B3.

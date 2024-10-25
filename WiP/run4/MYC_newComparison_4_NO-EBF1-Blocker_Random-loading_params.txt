@@ -1,0 +1,9 @@
+N: 900
+1D Steps: 50000
+Total LEF: 15
+Targeted: [] Probs: [0.9, 0.1]
+Lifetime: 800 Lifetime stalled: 80
+Left cap: {165: 0.99, 180: 0.99, 405: 0.25}, Left rel: {165: 0.0001, 180: 0.0001, 405: 0.03}
+Right cap: {495: 0.25, 735: 0.99}, Right rel: {495: 0.03, 735: 0.0001}
+
+This sumlation is similar to run2, in that the EBF1 blockers are not only weak, but are nonexistent. There is no targeted loading, only random loading of 15 extruders.

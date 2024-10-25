@@ -1,0 +1,10 @@
+N: 900
+1D Steps: 50000
+Total LEF: 15
+Targeted: [] Probs: [0.9, 0.1]
+Lifetime: 800 Lifetime stalled: 80
+Left cap: {Boundary: 0.99, E1.1: 0.99, E1.2: 0.99, E2: 0.5, B1: 0.25, B3: 0.5}, Left rel: {Boundary: 0.0001, E1.1: 0.0001, E1.2: 0.0001, E2: 0.015, B1: 0.03, B3: 0.015}
+Right cap: {E1.2: 0.99, E2: 0.5, B2: 0.25, B3: 0.5, MYC: 0.99}, Right rel: {E1.2: 0.0001, E2: 0.015, B2: 0.03, B3: 0.015, MYC: 0.0001}
+
+This simulation captures the Wild Type topology. 15 Random extruders, strong CTCF + strong EBF1 sites show TAD filling, stripes, and dots. There is no targeted loading of extruders.
+
