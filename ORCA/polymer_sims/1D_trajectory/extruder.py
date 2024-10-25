@@ -14,6 +14,7 @@ class Extruder():
             targeted_loading - boolean, are extruders to be loaded at predetermined positions?
             loading_spots - list, all loading index positions for all extruders
             loading_dist - list, probabilities of loading at each spot 
+            random_with_targeted - boolean, do random (uniform) loading in addition to targeted loading
         """
         self.ex_index = extruder_index 
         self.targeted_loading = targeted_loading
@@ -108,10 +109,10 @@ class Extruder():
         # 3 - translocate cohesin
         #print(self.occupied)
         for leg in [self.leg1, self.leg2]:
-            print('Leg {}: captured = {}'.format(leg.pos, leg.attrs['captured']))
+            #print('Leg {}: captured = {}'.format(leg.pos, leg.attrs['captured']))
             if not leg.attrs['captured']:
                 if (leg.pos + leg.side) >= len(self.occupied) or self.occupied[leg.pos + leg.side] != 0:
-                    print('Leg {} stalled at pos {} because it is marked as {}'.format(leg.side, leg.pos, self.occupied[leg.pos+leg.side]))
+                    #print('Leg {} stalled at pos {} because it is marked as {}'.format(leg.side, leg.pos, self.occupied[leg.pos+leg.side]))
                     leg.attrs['stalled'] = True
                 else:
                     #print('Leg at {} translocating'.format(leg.pos))
@@ -120,7 +121,7 @@ class Extruder():
                     self.occupied[leg.pos + leg.side] = 1
                     #print(self.occupied)
                     leg.pos += leg.side
-        print('Extruder now at ({},{})'.format(self.leg1.pos,self.leg2.pos))
+        #print('Extruder now at ({},{})'.format(self.leg1.pos,self.leg2.pos))
         return self.occupied
     def getUnloadProb(self):
         if self._any('stalled'):
@@ -133,7 +134,7 @@ class Extruder():
         while True:
             if self.targeted_loading: # This is where the ""magic"" happens for targeted loading!
                 p = np.random.random()
-                print(p)
+                #print(p)
                 pos = self.loading_spots[len(self.loading_dist)-1]
                 # find first index greater than p
                 for i,x in enumerate(self.loading_dist):
@@ -146,7 +147,7 @@ class Extruder():
             else:    
                 pos = np.random.randint(len(self.occupied)-1)
             if self.occupied[pos] != 1 and self.occupied[pos+1] != 1:
-                print('loading extruder at spot {}'.format(pos))
+                #print('loading extruder at spot {}'.format(pos))
                 break
         self.leg1.pos = pos
         self.leg2.pos = pos+1
@@ -159,7 +160,7 @@ class Extruder():
     def printLegInfo(self):
         for leg in [self.leg1, self.leg2]:
             s = "Leg {}:\nPosition: {}\n Captured: {}\n Stalled: {}\n".format(leg.side, leg.pos, leg.attrs['captured'], leg.attrs['stalled'])
-            print(s)
+            #print(s)
     class ExtruderLeg():
         """
         Class defining one side / 'leg' of a loop extruder
