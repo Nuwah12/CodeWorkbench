@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# ### Simple MD (3D) simulation
-
-# In[41]:
-
+###############
+# Noah Burget
+# Driver script for doing the 3-dimensional (molecular dynamics) portion of loop extrusion simulation
+# Originally written as a jupyter notebook
+###############
 
 import time
 import numpy as np
@@ -16,12 +14,6 @@ from polychrom.hdf5_format import HDF5Reporter
 import polychrom.forcekits as forcekits
 import polychrom.forces as forces
 import matplotlib.pyplot as plt
-
-
-# ### Define parameters for 3D portion
-
-# In[42]:
-
 
 ### Gather parameters from the 1D portion
 trajectories = h5py.File("../1D_trajectory/trajectory/LEFPositions.h5") # Saved trajectories from 1D siumulation
@@ -60,11 +52,7 @@ Each simulation run will produce {} conformations, for a total of {} conformatio
       """.format(steps,steps,restartSimulationEveryBlocks,simInitsTotal,int(restartSimulationEveryBlocks/saveEveryBlocks),int((restartSimulationEveryBlocks/saveEveryBlocks)*simInitsTotal)))
 
 
-# ### The Simulation Loop
-
-# In[43]:
-
-
+### The Simulation Loop
 milker = bondUpdater(LEFpositions)
 
 reporter = HDF5Reporter(folder="sim_outs", # Save data location
