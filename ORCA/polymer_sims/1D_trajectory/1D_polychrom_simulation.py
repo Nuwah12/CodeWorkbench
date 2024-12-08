@@ -1,1 +1,0 @@
-../MYC/1D_trajectory/1D_polychrom_simulation.py
