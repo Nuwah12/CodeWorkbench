@@ -1,4 +1,4 @@
-# Repository of analysis scripts
+# Repository of analysis scripts ('the nest')
 This is a repository I use to store analysis scripts that get re-used frequently. 
 ***
 **Organization**: \
