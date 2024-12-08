@@ -14,7 +14,10 @@ import seaborn as sns
 import h5py
 import sys
 
+###############################################################
 ### Translocating and writing trajectories using custom extruder class
+# Basic parameters for simulation run
+###############################################################
 RUN_NAME = "MYC_Granta519_perturb_EBF1Blocking_randomLoading_tieredBlockingBasedOnEBF1Strength" #### Define a name for this simulation run, sowe can save parameters
 N1 = 900 # Size of 1 system
 front_buffer = 0 # 'buffer' zone for poltting purposes
@@ -62,8 +65,8 @@ blockingRegions = {'E1_1':E1_blockingRegion_1, 'E1_2':E1_blockingRegion_2, 'E2':
 for br in blockingRegions:
     # Boundary blocker
     if br == 'E1_1': # Will never be EBF1 involved
-        cap = 0.99
-        rel = 0.001
+        cap = 0.99 # probability of a monomer capturing a LEF
+        rel = 0.001 # probability of a monomer releasing a LEF, typically much lower than capture prob. 
     # E1 blocker
     if 'E1_2' in br: # EBF1 involved
         cap = 0.45
