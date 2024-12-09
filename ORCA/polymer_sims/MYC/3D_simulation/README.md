@@ -36,7 +36,7 @@ A [**Variable Langevin Integrator**](http://docs.openmm.org/latest/userguide/the
 ```math
 m_i\frac{d\textbf{v}_i}{dt} = f_i - \gamma m_i v_i + R_i
 ```
-Where $v_i$ is the velocity of particle $i$, $f_i$ is the force acting on it, $m_i$ its mass, and $\gamma$ the friction cpefficient, $R_i$ an uncorrelated random forse chosen from a normal distribution with 0 mean and unit variance. \
+Where $v_i$ is the velocity of particle $i$, $f_i$ is the force acting on it, $m_i$ its mass, and $\gamma$ the friction coefficient, $R_i$ an uncorrelated random force chosen from a normal distribution with 0 mean and unit variance. \
 The *variable* part comes into play when we consider the timestep $\Delta t$. Instead of using a fixed timestep, it continuously updates the step size to keep the integration error below a user-defined threshold. To estimate the integration error, it compares positions calculated by verlet integration with those that would be given by an explicit [Eruler integration](https://physics.umd.edu/hep/drew/numerical_integration/):
 ```math
 \text{error}=(\Delta t)^2 \sum_i \frac{|\bf{f}_i|}{m_i}
