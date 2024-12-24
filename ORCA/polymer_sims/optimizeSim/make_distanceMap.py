@@ -12,20 +12,20 @@ from scipy.spatial.distance import pdist, squareform
 
 def main(p):
     dist_mats = []
-
     filenames = os.listdir(p)
     print("Starting distance calculations..")
     for i,x in enumerate(filenames):
         f = "{}/{}".format(p,x)
         f_df = np.loadtxt(f, delimiter=' ', skiprows=1)
-        dists = pdist(np.array(f_df), metric="euclidean")
+        dists = pdist(f_df, metric="euclidean")
         dist_mat = squareform(dists)
         dist_mats.append(dist_mat)
     
     print("Averaging distances..")
     avg_dist = np.mean(dist_mats, axis=0)
+    print(avg_dist)
     print("Aggregating distance matrix...")
-    agg_dist = avg_dist.reshape(30,30,30,30).mean(axis=(2,3))
+    agg_dist = avg_dist.reshape(30,30,30,30).mean(axis=(1,3))
     print("Writing to file..")
     np.savetxt('distMatrix.txt', agg_dist, delimiter='\t')
 

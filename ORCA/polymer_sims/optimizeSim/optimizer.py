@@ -13,9 +13,14 @@ import scipy.stats as stats
 from skopt import gp_minimize
 from skopt.space import Real
 
+from skbio.stats.distance import mantel
+
 def objective(params):
+    start_time = datetime.datetime.now()
+    print(f"STARTING PROCESS: {start_time}")
+    
     # Load in ground truth distance map (ORCA)
-    truth = np.loadtxt('Granta519cl27_0hr_MYC_ORCA_aggDistMatrix.tsv', delimiter='\t')
+    truth = np.loadtxt('DND41_shock_ZEB2_ORCA_aggDistMatrix.tsv', delimiter='\t')
 
     # Unpack parameters
     B1_cap, B1_rel, prom_cap, prom_rel, B2_cap, B2_rel = params
@@ -31,14 +36,20 @@ def objective(params):
     # Make distance map of simulated polymers
     ttt(f"{dir_name}")
     avg_sim_dist = dmap(f"{dir_name}/confs_txt")
+
+    avg_sim_symm = (avg_sim_dist + avg_sim_dist.T)/2 # Make symmetrical
+    np.fill_diagonal(avg_sim_symm, 0) # Fill diagonal with 0s
     
-    # Calculate loss
-    coeff = stats.spearmanr(avg_sim_dist.flatten(), truth.flatten())
+    # Calculate loss (Mantel test)
+    coeff = mantel(avg_sim_symm, truth, method='spearman')
     
     end_time = datetime.datetime.now()
+    tdelta = end_time - start_time
     with open(f"{dir_name}/{name}_coeff.txt", 'w') as outf:
-        outf.write(f"Completed at {end_time}")
-        outf.write(f"Spearman corr. coefficient: {coeff}")
+        outf.write(f"Completed at {end_time}\n")
+        outf.write(f"Total time: {tdelta}\n")
+        outf.write(f"Mantel test result: {coeff}")
+        
     return -coeff[0]
 
 def runner():
@@ -55,10 +66,9 @@ def runner():
     func=objective,  # The function to minimize
     dimensions=search_space,  # Parameter space
     acq_func='EI',            # Acquisition function ('EI', 'PI', 'LCB')
-    n_calls=50,               # Number of function evaluations
-    n_random_starts=10,       # Number of random initial evaluations
+    n_calls=100,               # Number of function evaluations
+    n_random_starts=5,       # Number of random initial evaluations
     random_state=42           # For reproducibility
-    
     )
 
     with open('sim_opt_res.txt', 'w') as o:
