@@ -1,0 +1,8 @@
+{
+  "CooledJuicer.sampleList": "samplesheet.tsv",
+  "CooledJuicer.TopDir": "/mnt/data0/noah/3C_methods/3C-Methods/processing",
+  "CooledJuicer.GenomeAssembly": "/mnt/data0/noah/references/hg19/juicer_refs/genome.fa",
+  "CooledJuicer.ChromSizes": "/mnt/data0/noah/references/hg19/Genes/ChromInfo.txt",
+  "CooledJuicer.Enzyme": "none"
+}
+
