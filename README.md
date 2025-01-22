@@ -1,4 +1,3 @@
-# Repository of analysis scripts ('The Nest')
 This repository stores frequently re-used scripts for ingesting, analyzing, and visualizing a wide array of bioinformatic data (mainly genomic based assay data, i.e. RNA-seq, ChIP-seq, also chromatin contact (3C)). 
 ***
 **Organization**: \
