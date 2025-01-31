@@ -24,18 +24,17 @@ for n in "$@"; do
     	fi
 done
 
-result+=".bed"
-
 # cat files together
-cat $@ > $result
+cat $@ > "$result.cat"
 
 # sort the catted file
-sort -k1,1 -k2,2n $result > "${result}.sorted"
+sort -k1,1 -k2,2n "$result.cat" > "$(basename ${result} .bed).sorted"
+
+rm "$result.cat" 
 
 # bedtools merge the sorted file
-bedtools merge -i "${result}.sorted" > "$(basename $result .bed.sorted).bed"
+bedtools merge -i "$(basename ${result} .bed).sorted" > $result.bed
 
-# cleanup
-rm ${result} "${result}.sorted"
+rm "$(basename ${result} .bed).sorted"
 
 echo $result
