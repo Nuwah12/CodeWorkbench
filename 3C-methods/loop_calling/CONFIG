@@ -1,0 +1,56 @@
+#### Software
+mustache=/mnt/data0/noah/software/mustache/mustache/mustache.py
+chromosight=/mnt/data0/apps/pipelines/3C_analysis/dots.py
+dotfinder=/mnt/data0/apps/pipelines/3C_analysis/dots.py
+
+conda="/mnt/data0/apps/anaconda/anaconda2/bin/activate py3"
+
+### Common input
+coolfile=/mnt/data0/noah/3C_processing/Granta519EBF1KI_cl27_0-24hr/cools/s38_221203_Granta519EBF1KI_cl27_0hr_MicroC_25U_Nova.hg38.mapq_30.1000.mcool
+resolution=5000
+min_distance=20000
+max_distance=10000000
+genome=hg38
+threads=10
+
+### OUTPUT TYPE SELECTION
+# The final list of loops can be the UNION or INTERSECT of any of the three 
+# Methods:
+# 1 - cooltools dotfinder
+# 2 - mustache
+# 3 - chromosight
+# Ex: If you wanted your final dotlist to be the intersect of cooltools dotfinder and mustache, you would do:
+# datasets=1,2
+# overlap="intersect"
+
+datasets=1,2,3
+overlap="union"
+
+### cooltools
+dots_out=dotfinder/cooltools_dots.dots
+expected_value_col=balanced.avg
+clr_weight_name=weight
+cluster_radius=20000
+max_nans=1
+lambda_bin=40
+tile_size=5000000
+fdr_threshold=0.1
+
+### mustache
+mustache_out=mustache/mustache_dots.dots
+#chromosome=
+pval_threshold=0.1
+#sigma_zero=
+sparsity_threshold=0.88
+#normalization=
+
+### chromosight
+chromosight_out=chromosight/chromosight_dots.dots
+prefix=chromosight_dots
+pattern=loops
+
+### output file
+final_out=./allDots_scores.dots
+filter_na=FALSE
+
+
