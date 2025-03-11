@@ -3,7 +3,7 @@ This repository stores frequently re-used scripts for ingesting, analyzing, and 
 ### **Structure**: 
 #### 
 `3C-methods/` - analysis scripts and other code for working with 3C-based assays (Hi-C, HiChIP, MicroC, etc.) \
-`genomic_analyses/` - scripts for differential expression testing and super enhancer identification. \
+`compbio/` - scripts for differential expression testing, super enhancer identification, and 3D hub formation. \
 `ORCA/` - scripts for analysis of ORCA data and simulated ORCA traces. *All code related to polymer simulations is here*.\
 `scripts/` - miscellaneous scripts for file conversion, data preprocessing, plotting/data visualization, etc.
 
