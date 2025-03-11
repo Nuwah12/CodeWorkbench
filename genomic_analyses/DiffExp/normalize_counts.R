@@ -21,5 +21,5 @@ rpm <- function(x){
   totalReads <- sum(x[,2])
   factor <- totalReads/1E6
   x$rpm <- x[,2] / factor
-  return(m)  
+  return(x)  
 }
