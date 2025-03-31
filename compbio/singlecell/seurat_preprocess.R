@@ -58,7 +58,7 @@ seurat.post.qc <- lapply(seurat.qc, apply.qc.filters, 500, 25000, 50, 7500, 25, 
 normalized.list <- lapply(seurat.post.qc, SCTransform.norm) # SCtransform normalize
 
 ### For comparison, do an unintegrated run 
-s1 <- normalized.list$SRR15871909
+s1 <- normalized.list[[1]]
 no.integrate <- merge(x=s1, y=as.vector(normalized.list[-1])) # Just merge the objects, no integration
 no.integrate <- SelectIntegrationFeatures(object.list = normalized.list, nfeatures = 3000) # PCA needs variable features, and we can't use FindVariableFeatures because the merged object contains multiple SCTransform models, one for each sample
 no.integrate <- RunPCA(no.integrate) # Run PCA
