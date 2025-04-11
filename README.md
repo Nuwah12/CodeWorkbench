@@ -12,4 +12,5 @@ Not all of my code/projects at Penn are housed here. They can be found at:
 * https://github.com/faryabiLab/dockerize-workflows - Containerized and reproducible NGS processing pipelines.
     * https://github.com/Nuwah12/Demo-RNAseq-Pipeline - Simple step-by-step RNA-seq processing pipeline made as a teaching tool for non-computational coleagues.
 * https://github.com/Nuwah12/EBV_Project - Code related to a project surrounding the interaction of an MCL cell line's genome with the Epstein-Barr Virus episome (coming soon, currently under construction).
+* https://github.com/Nuwah12/GENOVA2 - A fork of the popular 3C data visualization R package GENOVA, with added options for applying normalization to contact matrices.
  
