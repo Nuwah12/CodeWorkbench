@@ -21,6 +21,8 @@ if [[ $# -eq 0 ]]; then
 	exit 1
 fi
 
+zip_fastq=false
+
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		-s | --samplesheet )
@@ -29,6 +31,10 @@ while [[ $# -gt 0 ]]; do
 			;;
 		-r | --sratools )
 			r="$2"
+			shift 2
+			;;
+		-z | --gzip )
+			zip_fastq=true
 			shift 2
 			;;
 		-* | --* )
@@ -49,4 +55,9 @@ while read srr; do
 	echo "$(date): Finished downloading $srr"
 done < $s
 
+if [[ ${zip_fastq} ]]; then
+	echo "$(date): gzipping all downloaded .fastq files..."
+	gzip *.fastq
+fi
 
+echo "$(date): Done!"
