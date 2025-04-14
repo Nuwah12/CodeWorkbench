@@ -6,6 +6,9 @@ This repository houses code developed during my tenure at UPenn in the [Faryabi 
 `compbio/` - scripts for differential expression testing, super enhancer identification, and 3D hub formation. \
 `ORCA/` - scripts for analysis of ORCA data and simulated ORCA traces. *All code related to polymer simulations is here*.\
 `scripts/` - miscellaneous scripts for file conversion, data preprocessing, plotting/data visualization, etc.
+   * `convert/` - scripts to convert between common (bioinformatic) file types
+   * `misc/` - miscellanous utility scripts for bioinformatics and data manipulation
+   * `DepMap/` - Cancer Dependency Map data processing
 
 #### Other repositories
 Not all of my code/projects at Penn are housed here. They can be found at:
