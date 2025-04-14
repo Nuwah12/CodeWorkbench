@@ -1,4 +1,5 @@
 This repository houses code developed during my tenure at UPenn in the [Faryabi Lab](https://faryabilab.com/). The code found here deals with the ingestion, analysis, and visualization of Next-Generation Sequencing (NGS) data, as well as utility functions to do a wide array of tasks common to bioinformatics and data analysis in Python and R, as well as shell scripts for working in a UNIX environment. 
+********
 ### **Structure**: 
 #### 
 `3C-methods/` - analysis scripts and other code for working with 3C-based assays (Hi-C, HiChIP, MicroC, etc.) \
