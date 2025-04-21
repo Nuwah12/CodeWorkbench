@@ -17,3 +17,9 @@ Not all of my code/projects at Penn are housed here. They can be found at:
 * https://github.com/Nuwah12/GENOVA2 - A **fork** of the popular 3C data visualization R package [GENOVA](https://github.com/robinweide/GENOVA), with added options for applying normalization to contact matrices.
 * https://github.com/Nuwah12/EBV_Project - Code related to a project surrounding the interaction of an MCL cell line's genome with the Epstein-Barr Virus episome (coming soon, currently under construction).
  
+In addition, my [personal website](https://nuwah12.github.io/) includes more information on my work and career. 
+
+****
+           _   
+       .__(.)< (MEOW)
+        \___)
