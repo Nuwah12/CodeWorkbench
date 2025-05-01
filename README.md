@@ -1,13 +1,15 @@
 This repository houses code developed during my tenure at UPenn as a bioinformatician in the [Faryabi Lab](https://faryabilab.com/). The code found here deals with the ingestion, analysis, and visualization of Next-Generation Sequencing (NGS) data, as well as utility functions to do a wide array of tasks common to bioinformatics and data analysis in Python and R. There are also a wide array of scripts for bioinformaticians working in a UNIX environment.********
 ### **Structure**: 
-#### 
-`3C-methods/` - analysis scripts and other code for working with 3C-based assays (Hi-C, HiChIP, MicroC, etc.) \
-`compbio/` - scripts for differential expression testing, super enhancer identification, and 3D hub formation. \
-`ORCA/` - scripts for analysis of ORCA data and simulated ORCA traces. *All code related to polymer simulations is here*.\
-`scripts/` - miscellaneous scripts for file conversion, data preprocessing, plotting/data visualization, etc.
-   * `convert/` - scripts to convert between common (bioinformatic) file types
-   * `misc/` - miscellanous utility scripts for bioinformatics and data manipulation
-   * `DepMap/` - Cancer Dependency Map data processing
+```
+repo/
+├── 3C-methods/     # Hi-C, HiChIP, Micro-C analysis
+├── compbio/        # DE testing, super enhancers, 3D hubs
+├── ORCA/           # ORCA and polymer simulation analysis
+├── scripts/        # General-purpose plotting and utility scripts
+  ├──  convert/     # File format converters for common bioinformatics filetypes
+  ├── misc/         # Miscellaneous scripts and helpers
+  ├── DepMap/       # Tools for Cancer Dependency Map data
+```
 
 #### Other repositories
 Not all of my code/projects at Penn are housed here. They can be found at:
