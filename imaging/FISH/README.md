@@ -7,3 +7,17 @@ Steps to start Jupyter notebook:
 4. Navigate to `<Aries IP>:8888` to access notebook. 
 
 Method-specific steps/information is in the notebook.
+
+#### Note on File Naming:
+BigFISH offers the ability to build a 'recipe' when reading files from multiple different channels / FOVs. It is expected that, defined by the recipe, files will only contain unique identifiers with the exception of one 'optional' part of the name that is shared amongst the files. For example, if your files are named like: \
+`Experiment_FOV1_DAPI.tif`, `Experiment_FOV2_DAPI.tif` ... `Experiment_FOV10_DAPI.tif` \
+the recipe would look like:
+```
+recipe = {
+    "fov": ["FOV1,"FOV2",...,"FOV10"],
+    "c": "DAPI",
+    "opt": "Experiment",
+    "ext": "tif",
+    "pattern": "opt_fov_c.ext"}
+```
+BigFISH will search for files with the pattern specified by the `pattern` key. 
