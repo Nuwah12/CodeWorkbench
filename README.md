@@ -6,7 +6,6 @@ CodeWorkbench/
 ├── 3C-methods/     # Hi-C, HiChIP, Micro-C analysis
 ├── compbio/        # DE testing, super enhancers, 3D hubs
 ├── imaging/        # Code for image analysis (currently FISH and ORCA)
-├── ORCA/           # ORCA and polymer simulation analysis
 ├── scripts/        # General-purpose plotting and utility scripts
   ├──  convert/     # File format converters for common bioinformatics filetypes
   ├── misc/         # Miscellaneous scripts and helpers
