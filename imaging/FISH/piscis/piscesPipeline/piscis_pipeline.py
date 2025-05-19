@@ -42,18 +42,47 @@ def _get_channel_dim(img, numChannels):
             print(f"Inferring dim. {i} (size = {s}) is the channel dimension")
             return i
 
+def _checks(args):
+    # img dir exists
+    if not os.path.exists(args["image_dir"]):
+        raise FileNotFoundError(f"Couldn't find image directory {args['image_dir']}")
+        exit(1)
+    if not args["spot_channel"] in args["channels"]:
+        raise ValueError(f"Specified channel to call spots on ({args["spot_channel"]}) is not present in provided channel names ({args["channels"]})")
+        exit(1)
+
+def call_spots_piscis(piscis_obj, img):
+    pass
+
 def main():
+    """
+    Main function. Gathers image files and arguments to perform spot calling
+    """
     settings = _parse_args() # returns settings as dict {key: value}
     
     img_files = [os.path.join(settings["image_dir"], f) for f in os.listdir(settings["image_dir"])]
     imgtype = settings["image_type"]
     callChannel = settings["spot_channel"]
-    
-    channelDim = None
-    for i in img_files:
-        j = _read_img(i, imgtype)
 
-        channelDim = _get_channel_dim(j, len(settings["channels"]))
+    _checks(settings) # run checks on supplied argument values
+    
+    model = piscis.Piscis(model_name=settings["model"]) # make piscis obj to reuse
+
+    # Main loop
+    for i in img_files:
+        j = _read_img(i, imgtype) # read image to np nd array
+
+        channelDim = _get_channel_dim(j, len(settings["channels"])) # guesstimate the channel dimension
+        channelIdx = settings["channels"].index(settings["spot_channel"]) # get the index of the spot calling channel
+
+        index = [slice(None)] * j.ndim
+        index[channelDim] = channelIdx
+        
+        j = j[tuple(index)] # index the array to just the channel for spot calling
+
+        
+
+        #print(j[tuple(index)].shape) 
         
 
 
