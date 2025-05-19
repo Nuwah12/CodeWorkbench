@@ -1,0 +1,17 @@
+image_dir: "/mnt/data0/noah/analysis/CodeWorkbench/imaging/FISH/tobias_ICOS"                 # Path to directory holding images  
+name_prefix: ""               # image filename 'prefix'; pipeline expects files to be named '<prefix>_FOV01' / '<prefix>_fov01' / '<prefix>_loc01' / '<prefix>_LOC01'
+num_fov: 30                   # total number of FOVs in imageset
+image_type: "nd2"             # Image filetype (nd2 or tiff/tif)
+
+channels:                     # channels included in images (in order, 0th, 1st, 2nd, etc)
+ - "DAPI"
+ - "Cy3"
+ - "A647"
+spot_channel: ""              # name of channel to call spots on (i.e. "Cy3")
+call_projection: false        # set to true to call spots on the max Z projection; set to false to call on all z slices independently (calling on max. projection skips deduplication step)
+
+model: "20230905"             # name of the piscis model to use for spot calling
+
+dedup_radius: 1               # pixel radius of neigborhoods to dedup
+
+
