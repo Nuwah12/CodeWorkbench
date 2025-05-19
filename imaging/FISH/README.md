@@ -2,8 +2,9 @@
 Copy this repository to your local machine with `git clone`.\
 Steps to start Jupyter notebook:
 1. Navigate to this directory
-2. On **Aries**, activate the bigfish virtual envornment: 
-    * `source /opt/miniforge3/bin/activate` 
+2. Install the conda environment with:
+    * `conda env create -f <env>.yml`
+       * `imagingEnv.yml` is *not* GPU enabled, `imagingEnv_GPU-JAX.yml` is.
     * `mamba activate bigfish` 
     * If you see an error like: 
    ```
@@ -11,8 +12,8 @@ Steps to start Jupyter notebook:
     Thus you must initialize your shell before using activate and deactivate.
    ```
     * Run `eval "$(mamba shell hook --shell bash)"`, and then activate the bigfish environment
-4. Start the Notebook (jupyter lab) with `jupyter lab --ip <Aries IP> --port 8888`
-5. Navigate to `<Aries IP>:8888` to access notebook. 
+4. Start the Notebook (jupyter lab) with `jupyter lab --ip <Server IP> --port 8888`
+5. Navigate to `<Server IP>:8888` to access notebook. 
 
 Method-specific steps/information is in the notebook.
 
