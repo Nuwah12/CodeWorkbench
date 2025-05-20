@@ -22,6 +22,3 @@ Not all of my code/projects at Penn are housed here. They can be found at:
 In addition, my [personal website](https://nuwah12.github.io/) includes more information on my work and career. 
 
 ****
-           _   
-       .__(.)< (MEOW)
-        \___)
