@@ -122,21 +122,26 @@ def _dedup_spots(spots, img, radius):
     # Now, select the brightest pixel in each neighborhood as the representative spot
     ## TODO: Fix deduplication scheme
     deduped_spots = []
-    for neighborhood in neighborhoods:
-        if len(neighborhood) == 1:
-            deduped_spots.append((all_spots[neighborhood[0]])) # if neighborhood is a singleton, just add it
+    seen = set()
+
+    for i, group in enumerate(neighborhoods):
+        # Skip if we've already handled a neighbor in this group
+        if any(j in seen for j in group):
             continue
-        # pick the brightest detected spot
-        intensities = np.array([img_mp[tuple(all_spots[i].astype(int))] for i in neighborhood])
-        print(intensities)
-        brightest_idx = neighborhood[np.argmax(intensities)]
-        #print(brightest_idx)
+
+        # Get intensities from max-projected image
+        intensities = [
+            img_mp[int(all_spots[j][0]), int(all_spots[j][1])] for j in group
+        ]
+        brightest_idx = group[np.argmax(intensities)]
         deduped_spots.append(all_spots[brightest_idx])
+        seen.update(group)
     
     logging.info(f"{len(deduped_spots)} spots remain after deduplication.")
     return deduped_spots
 
 def _interactive_plot(img, spots):
+    ## TODO: implement plotly interactive plotting here
     pass
 
 def main():
