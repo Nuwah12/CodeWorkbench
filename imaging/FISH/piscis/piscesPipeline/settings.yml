@@ -7,8 +7,9 @@ channels:                     # channels included in images (in order, 0th, 1st,
  - "DAPI"
  - "Cy3"
  - "A647"
-spot_channel: ""              # name of channel to call spots on (i.e. "Cy3")
+spot_channel: "Cy3"              # name of channel to call spots on (i.e. "Cy3")
 call_projection: false        # set to true to call spots on the max Z projection; set to false to call on all z slices independently (calling on max. projection skips deduplication step)
+piscis_thresh: 1              # piscis spot calling threshold - make only small changes to this value [0..1]
 
 model: "20230905"             # name of the piscis model to use for spot calling
 
