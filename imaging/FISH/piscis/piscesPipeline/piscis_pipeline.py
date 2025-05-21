@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__) # init the logging object
 
 def _parse_args():
     """
-    Parse yml
+    Parse input argument and the settings.yml file.
     """
     parser = argparse.ArgumentParser(prog="Piscis Pipeline",
                                      description="Call spots in smFISH data with Piscis")
@@ -36,6 +36,12 @@ def _parse_args():
     return settings
 
 def _read_img(path, img_type):
+    """
+    Read in an image file with the correct library.
+    Arguments:
+        path (str)              - path to the image file
+        img_type (str)          - image filetype ["tif", "tiff", "nd2"]
+    """
     if img_type == "tif" or img_type == "tiff":
         return tifffile.imread(path)
     elif img_type == "nd2":
@@ -45,6 +51,13 @@ def _read_img(path, img_type):
             raise ValueError("File does not end in .nd2, check filetype and extension.")
 
 def _get_channel_dim(img, numChannels):
+    """
+    Estimate which dimension along the ndarray contains the channel information.
+    This is done by simply looking for the dimension which has size equal to the number of dimensions provided in settings.yml
+    Arguments:
+        img (ndarray)           - img to be analyzed
+        numChannels (int)       - the total number of channels in img
+    """
     for i, s in enumerate(img.shape):
         if s != numChannels:
             continue
@@ -53,6 +66,11 @@ def _get_channel_dim(img, numChannels):
             return i
 
 def _checks(args):
+    """
+    Sanity checks for arguments passed via settings.yml
+    Arguments:
+        args (dict)             - dictionary of arguments parsed from settings.yml
+    """
     # img dir exists
     if not os.path.exists(args["image_dir"]):
         raise FileNotFoundError(f"Couldn't find image directory {args['image_dir']}")
@@ -63,6 +81,13 @@ def _checks(args):
         exit(1)
 
 def _call_spots_piscis(piscis_obj, img, threshold):
+    """
+    Call spots on an image using the Piscis model.
+    Arguments:
+        piscis_obj (piscis)     - an instance of a piscis object
+        img - (ndarray)         - the image to be analyzed
+        threshold (int/float)   - piscis threshold model parameter
+    """
     logger.info("Starting spot detection...")
     start = timer()
     pred = piscis_obj.predict(img, threshold=1)
@@ -72,9 +97,18 @@ def _call_spots_piscis(piscis_obj, img, threshold):
 
     return pred
 
+def _dedup_spots(spots, img, threshold):
+    """
+    Deduplicate called spots via a nearest neighbors method
+    Arguments:
+        spots (list of lists)   - list of called spots for image img, with 1 sublist for each z slice
+        img (ndarray)           - image to be deduplicated
+        threshold (int/float)   - diameter in pixels for finding neighborhoods
+    """
+
 def main():
     """
-    Main function. Gathers image files and arguments to perform spot calling
+    Main function. Gathers image files and arguments to perform spot calling.
     """
     settings = _parse_args() # returns settings as dict {key: value}
     
