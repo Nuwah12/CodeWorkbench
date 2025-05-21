@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 
@@ -15,7 +16,7 @@ import yaml
 import logging
 
 logging.basicConfig(level = logging.INFO)
-logger = logging.getLogger(__name__) # init the logging object
+logger = logging.getLogger("PiscisPipeline") # init the logging object
 
 def _parse_args():
     """
@@ -72,13 +73,15 @@ def _checks(args):
         args (dict)             - dictionary of arguments parsed from settings.yml
     """
     # img dir exists
-    if not os.path.exists(args["image_dir"]):
-        raise FileNotFoundError(f"Couldn't find image directory {args['image_dir']}")
-        exit(1)
+    assert Path(args["image_dir"]).exists(), f"Could not find supplied image directory '{args['image_dir']}'"
     # channel to call spots on is in list of channels
-    if not args["spot_channel"] in args["channels"]:
-        raise ValueError(f"Specified channel to call spots on ({args["spot_channel"]}) is not present in provided channel names ({args["channels"]}). Please check the provided names and re-specify.")
-        exit(1)
+    assert args["spot_channel"] in args["channels"], f"Specified channel to call spots on ({args["spot_channel"]}) is not present in provided channel names ({args["channels"]}). Please check the provided names and re-specify."
+
+def _max_proj_image(img):
+    """
+    Returns a masimum projection of the input image over all Z slices
+    """
+    return np.max(img, axis=0)
 
 def _call_spots_piscis(piscis_obj, img, threshold):
     """
@@ -93,11 +96,11 @@ def _call_spots_piscis(piscis_obj, img, threshold):
     pred = piscis_obj.predict(img, threshold=1)
 
     elapsed = timedelta(seconds=timer()-start) # time
-    logger.info(f"Finished calling spots; {elapsed} elapsed")
+    logger.info(f"Finished calling spots; {len(np.concatenate(pred))} spots found in {elapsed}")
 
     return pred
 
-def _dedup_spots(spots, img, threshold):
+def _dedup_spots(spots, img, radius):
     """
     Deduplicate called spots via a nearest neighbors method
     Arguments:
@@ -105,18 +108,47 @@ def _dedup_spots(spots, img, threshold):
         img (ndarray)           - image to be deduplicated
         threshold (int/float)   - diameter in pixels for finding neighborhoods
     """
+    logger.info("Deduplicating called spots")
+    all_spots = np.concatenate(spots) # unnest the list for all z slices
+
+    # Nearest Neighbors 
+    nn = NearestNeighbors(radius=radius)
+    nn.fit(all_spots)
+    neighborhoods = nn.radius_neighbors(all_spots, return_distance=False)
+
+    # Max-project the image so we can find the brightest spots
+    img_mp = _max_proj_image(img)
+
+    # Now, select the brightest pixel in each neighborhood as the representative spot
+    ## TODO: Fix deduplication scheme
+    deduped_spots = []
+    for neighborhood in neighborhoods:
+        if len(neighborhood) == 1:
+            deduped_spots.append((all_spots[neighborhood[0]])) # if neighborhood is a singleton, just add it
+            continue
+        # pick the brightest detected spot
+        intensities = np.array([img_mp[tuple(all_spots[i].astype(int))] for i in neighborhood])
+        print(intensities)
+        brightest_idx = neighborhood[np.argmax(intensities)]
+        #print(brightest_idx)
+        deduped_spots.append(all_spots[brightest_idx])
+    
+    logging.info(f"{len(deduped_spots)} spots remain after deduplication.")
+    return deduped_spots
+
+def _interactive_plot(img, spots):
+    pass
 
 def main():
     """
     Main function. Gathers image files and arguments to perform spot calling.
     """
     settings = _parse_args() # returns settings as dict {key: value}
+    _checks(settings)
     
     img_files = [os.path.join(settings["image_dir"], f) for f in os.listdir(settings["image_dir"])]
     imgtype = settings["image_type"]
     callChannel = settings["spot_channel"]
-
-    _checks(settings) # run checks on supplied argument values
     
     model = piscis.Piscis(model_name=settings["model"]) # make piscis obj to reuse
     threshold = settings["piscis_thresh"] # piscis threshold parameter
@@ -135,8 +167,10 @@ def main():
         j = j[tuple(index)] # index the array to just the channel for spot calling
         
         pred_spots = _call_spots_piscis(model, j, threshold)
+
+        dedup_spots = _dedup_spots(pred_spots, j, settings["dedup_radius"])
         #print(j[tuple(index)].shape) 
-        
+        exit(0)        
 
 
 if __name__ == "__main__":
