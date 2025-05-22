@@ -140,9 +140,68 @@ def _dedup_spots(spots, img, radius):
     logging.info(f"{len(deduped_spots)} spots remain after deduplication.")
     return deduped_spots
 
-def _interactive_plot(img, spots):
+# Normalize and convert Z-slice to uint8
+def _normalize_to_uint8(slice_2d):
+    p_min, p_max = np.percentile(slice_2d, (1, 99))
+    norm = np.clip((slice_2d - p_min) / (p_max - p_min), 0, 1)
+    return (norm * 255).astype(np.uint8)
+
+
+def _interactive_plot(img, spots, mode="all", outf="."):
     ## TODO: implement plotly interactive plotting here
-    pass
+    lines_x = []
+    lines_y = []
+    for i, nbrs in enumerate(neighbors):
+        for j in nbrs:
+            if i >= j:  # avoid duplicates
+                continue
+    lines_x.extend([x[i], x[j], None])
+    lines_y.extend([y[i], y[j], None])
+    
+    img_slice = normalize_to_uint8(loc1_untr_maxProj)
+
+    pil_img = Image.fromarray(img_slice)
+    buffer = BytesIO()
+    pil_img.save(buffer, format="PNG")
+    encoded = base64.b64encode(buffer.getvalue()).decode()
+
+    # Create figure with image background
+    fig = go.Figure()
+
+    # Add lines between neighbors
+    fig.add_trace(go.Scatter(
+        x=lines_x,
+        y=lines_y,
+        mode='lines',
+        line=dict(color='blue', width=1),
+        name='Neighbor Links'))
+
+    # Add spot markers
+    fig.add_trace(go.Scatter(
+        x=x,
+        y=y,
+        mode='markers',
+        marker=dict(color='rgba(255,0,0,1)', size=5),
+        name='Spots'))
+
+    # Overlay the image
+    fig.update_layout(
+        images=[dict(
+            source=f'data:image/png;base64,{encoded}',
+            xref="x", yref="y",
+            x=0, y=0,
+            sizex=img_slice.shape[1],  # X-axis size (width)
+            sizey=img_slice.shape[0],  # Y-axis size (height)
+            sizing="stretch",
+            opacity=1.0,
+            layer="below")],
+        height=700,
+        width=700,
+        title=f"Max-Z projection with Neighbors")
+
+    fig.update_yaxes(autorange='reversed')
+    fig.write_html('../piscis/loc01_ICOS_untr_spotNeighborhoods.html')
+
 
 def main():
     """
@@ -158,11 +217,18 @@ def main():
     model = piscis.Piscis(model_name=settings["model"]) # make piscis obj to reuse
     threshold = settings["piscis_thresh"] # piscis threshold parameter
 
+    plot_all = settings["plot_all"]
+    plot_dedup = settings["plot_dedup"]
+    plot_neighborhoods = settings["plot_neighborhoods"]
+    plot_out_dir = settings["plot_out_dir"]
+
     # Main loop
     for i in img_files:
         logger.info(f"Starting image {i}")
         j = _read_img(i, imgtype) # read image to np nd array
-        
+        jname = i.split("/")[len(i.split("/"))-1]
+        print(f"name: {jname}")
+        exit(0) 
         channelDim = _get_channel_dim(j, len(settings["channels"])) # guesstimate the channel dimension
         channelIdx = settings["channels"].index(settings["spot_channel"]) # get the index of the spot calling channel
 
@@ -171,10 +237,18 @@ def main():
         
         j = j[tuple(index)] # index the array to just the channel for spot calling
         
+        # call spots
         pred_spots = _call_spots_piscis(model, j, threshold)
-
+        
+        # de-duplicate the spots called over all z slices
         dedup_spots = _dedup_spots(pred_spots, j, settings["dedup_radius"])
-        #print(j[tuple(index)].shape) 
+        
+        if plot_all:
+            _interactive_plot(j, pred_spots, mode="all", outf="")
+        if plot_dedup:
+            _interactive_plot(_max_proj_image(j), mode="max", outf="")
+        if plot_neighborhoods:
+            _interactive_plot(_max_proj_image(j), mode="neighbors", outf=f"{plot_out_dir}/")
         exit(0)        
 
 
