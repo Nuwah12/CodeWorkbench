@@ -148,7 +148,16 @@ def _normalize_to_uint8(slice_2d):
 
 
 def _interactive_plot(img, spots, mode="all", outf="."):
-    ## TODO: implement plotly interactive plotting here
+    """
+    Create an interactive plot using plotly and save to html
+    Arguments:
+        img (ndarray) - the image to be plotted
+        spots (array) - the spots to be plotted
+        mode (str) - one of ['all', 'max', 'neighbors'], determines what is plotted
+            'all' - plots all dots on their respective z slices
+            'dedup' - plots deduplicated spots on a max z projection of img
+            'neighbors' - plots all dots on a max projection of img with lines denoting dots that were called as one neighborhood
+    """
     lines_x = []
     lines_y = []
     for i, nbrs in enumerate(neighbors):
@@ -227,8 +236,7 @@ def main():
         logger.info(f"Starting image {i}")
         j = _read_img(i, imgtype) # read image to np nd array
         jname = i.split("/")[len(i.split("/"))-1]
-        print(f"name: {jname}")
-        exit(0) 
+         
         channelDim = _get_channel_dim(j, len(settings["channels"])) # guesstimate the channel dimension
         channelIdx = settings["channels"].index(settings["spot_channel"]) # get the index of the spot calling channel
 
@@ -244,11 +252,11 @@ def main():
         dedup_spots = _dedup_spots(pred_spots, j, settings["dedup_radius"])
         
         if plot_all:
-            _interactive_plot(j, pred_spots, mode="all", outf="")
+            _interactive_plot(j, pred_spots, mode="all", outf=f"{plot_out_dir}/{jname}_interactivePlot_allDots_allZslices.html")
         if plot_dedup:
-            _interactive_plot(_max_proj_image(j), mode="max", outf="")
+            _interactive_plot(_max_proj_image(j), mode="dedup", outf=f"{plot_out_dir}/{jname}_interactivePlot_dedupDots_maxProj.html")
         if plot_neighborhoods:
-            _interactive_plot(_max_proj_image(j), mode="neighbors", outf=f"{plot_out_dir}/")
+            _interactive_plot(_max_proj_image(j), mode="neighbors", outf=f"{plot_out_dir}/{jname}_interactivePlot_allDots_neighborhoods_maxProj.html")
         exit(0)        
 
 
