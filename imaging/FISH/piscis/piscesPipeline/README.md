@@ -12,6 +12,7 @@ The available arguments include:
 * `image_dir`: Path to directory with image files. Please ensure the files to be analyzed are in one directory.
 * `image_type`: Type of image to be analyzed. Currently supported options are `tif`/`tiff` and `nd2`
 * `channels`: An array with one entry for each fluoresence channel in the image. The dimension containing channel information is inferred based on the size of this list.
+  * **NOTE:** Please ensure the ordering of channels here is the same as it is in your image file, i.e. in the below example, channel 0 is "DAPI", channel 1 is "Cy3", and channel 2 is "A647".
 ##### Spot calling / de-duplication
 * `piscis_thresh`: The `threshold` parameter for the piscis model. It should not be changed much. Check [here](https://pmc.ncbi.nlm.nih.gov/articles/PMC10862914/) for more information.
 * `model`: The (string) representing the piscis model to be used. Only change if results are not looking good.
