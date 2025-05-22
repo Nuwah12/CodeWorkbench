@@ -3,6 +3,13 @@ The python script `piscis_pipeline.py` will run the [piscis](https://github.com/
 By default, spots are called on each Z-stack slice independently. Afterwards, clusters of spots are de-duplicated using sklearn's `NearestNeighbors` module to identify the clusters, and the brightest spot from each neighborhood is retained.
 
 #### Usage
+Before running the pipeline, I suggest installing and activating the conda environment in the above directory - `imagingEnv.yml`. It contains all packages in correct versions needed to run it. \
+To install, copy the `yml` file to your local machine and run: 
+```
+conda env create -f imgagingEnv.yml
+conda activate bigfish
+```
+To execute the pipeline, run
 ```
 python3 piscis_pipeline [-h] settings.yml
 ```
