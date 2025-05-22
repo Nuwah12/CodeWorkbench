@@ -15,4 +15,8 @@ model: "20230905"             # name of the piscis model to use for spot calling
 
 dedup_radius: 1               # pixel radius of neigborhoods to dedup
 
+plot_all: true                # plot all dots on each z stack independently
+plot_neighborhoods: false     # plot all spots with detected neighborhoods indicated by blue lines
+plot_dedup: true              # plot all deduplicated dots on maximum projected z stack
+plot_out_dir: ""
 
