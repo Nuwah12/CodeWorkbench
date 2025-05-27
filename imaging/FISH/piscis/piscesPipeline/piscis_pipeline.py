@@ -92,7 +92,7 @@ def _max_proj_image(img):
     """
     return np.max(img, axis=0)
 
-def _call_spots_piscis(piscis_obj, img, threshold):
+def _call_spots_piscis(piscis_obj, img, threshold, max_proj=True):
     """
     Call spots on an image using the Piscis model.
     Arguments:
@@ -105,7 +105,12 @@ def _call_spots_piscis(piscis_obj, img, threshold):
     pred = piscis_obj.predict(img, threshold=1)
     
     elapsed = timedelta(seconds=timer()-start) # time
-    logger.info(f"Finished calling spots; {len(np.concatenate(pred))} spots found in {elapsed}")
+    if max_proj:
+        num_spots = len(pred)
+    else:
+        num_spots = len(np.concatenate(pred))
+    
+    logger.info(f"Finished calling spots; {num_spots} spots found in {elapsed}")
 
     return pred
 
@@ -345,8 +350,10 @@ def main():
         call_max = settings["call_max"]
         is_maxProject = settings["is_maxProject"]
 
-        if call_max and not is_maxProject:
-            j_max = _max_proj_image(j)
+        if call_max and not is_maxProject: # if we are calling spots on a max projection AND the images passed are not max projections, we need to project them
+            logger.info("Max projecting image and calling spots")
+
+            j_max = _max_proj_image(j) # max project
         
             # call spots
             pred_spots = _call_spots_piscis(model, j_max, threshold)
@@ -359,11 +366,13 @@ def main():
                 Path(settings["spot_out"]).mkdir()
             np.savetxt(f"{settings["spot_out"]}/{jname}_allCalledSpots.tsv", pred_spots, delimiter="\t")
         
-        if is_maxProject:
-            # call spots
+        if is_maxProject: # if the images passed are already max projected, the only type of spot calling we can do is on the max projection
+            logger.info("Image is already max-projected, calling spots")
+
+            # call spots; no max projection
             pred_spots = _call_spots_piscis(model, j, threshold)
 
-            # plot
+            # plot, type='dedup' for just dots on passed image
             _interactive_plot(j, pred_spots, mode="dedup", outf=f"{plot_out_dir}/{jname}_interactivePlot_maxProj_allSpots.html")
 
             # output
@@ -372,8 +381,11 @@ def main():
             np.savetxt(f"{settings["spot_out"]}/{jname}_allCalledSpots.tsv", pred_spots, delimiter="\t")
 
         
-        else:
+        else: # the images are z stacks and we are calling on all z slices independently and then deduping them
+            logger.info("Calling spots on all X-slices independently, then deduplicating")
+
             # de-duplicate the spots called over all z slices
+            pred_spots = _call_spots_piscis(model, j, threshold, max_proj=False)
             dedup_spots_neigh = _dedup_spots(pred_spots, j, settings["dedup_radius"])
             dedup_spots = dedup_spots_neigh[1]
 
@@ -383,8 +395,6 @@ def main():
                 _interactive_plot(_max_proj_image(j), dedup_spots, mode="dedup", outf=f"{plot_out_dir}/{jname}_interactivePlot_dedupDots_maxProj.html")
             if plot_neighborhoods:
                 _interactive_plot(_max_proj_image(j), np.concatenate(pred_spots), mode="neighbors", outf=f"{plot_out_dir}/{jname}_interactivePlot_allDots_neighborhoods_maxProj.html", neighborhoods=dedup_spots_neigh[0])   
-        
-        exit(0)
 
 if __name__ == "__main__":
     main()
