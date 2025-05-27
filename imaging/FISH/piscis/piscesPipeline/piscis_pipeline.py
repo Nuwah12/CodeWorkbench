@@ -68,10 +68,11 @@ def _get_channel_dim(img, numChannels):
         numChannels (int)       - the total number of channels in img
     """
     for i, s in enumerate(img.shape):
+        #print(f"{i},{s}")
         if s != numChannels:
             continue
         else:
-            logger.info(f" Inferring dim. {i} (size = {s}) is the channel dimension")
+            logger.info(f"Inferring dim. {i} (size = {s}) is the channel dimension")
             return i
 
 def _checks(args):
@@ -102,9 +103,9 @@ def _call_spots_piscis(piscis_obj, img, threshold):
     logger.info("Starting spot detection...")
     start = timer()
     pred = piscis_obj.predict(img, threshold=1)
-
+    
     elapsed = timedelta(seconds=timer()-start) # time
-    logger.info(f" Finished calling spots; {len(np.concatenate(pred))} spots found in {elapsed}")
+    logger.info(f"Finished calling spots; {len(np.concatenate(pred))} spots found in {elapsed}")
 
     return pred
 
@@ -145,7 +146,7 @@ def _dedup_spots(spots, img, radius):
         deduped_spots.append(all_spots[brightest_idx])
         seen.update(group)
     
-    logging.info(f" {len(deduped_spots)} spots remain after deduplication.")
+    logging.info(f"{len(deduped_spots)} spots remain after deduplication.")
     return (neighborhoods, np.array(deduped_spots))
 
 # Normalize and convert Z-slice to uint8
@@ -275,6 +276,7 @@ def _interactive_plot(img, spots, mode, outf, neighborhoods=None):
         fig.write_html(outf)
 
     if mode == "dedup":
+        vmin, vmax = np.percentile(img, (1, 99))  # or (0.5, 99.5) for more aggressive stretch
         img_slice = _normalize_to_uint8(img)
         y = spots[:, 0]
         x = spots[:, 1]
@@ -284,7 +286,9 @@ def _interactive_plot(img, spots, mode, outf, neighborhoods=None):
         fig.add_trace(go.Heatmap(
             z=img,
             colorscale='gray',
-            showscale=False
+            showscale=False,
+            zmin=vmin,
+            zmax=vmax
         ))
 
         fig.add_trace(go.Scatter(
@@ -313,6 +317,7 @@ def main():
     img_files = [os.path.join(settings["image_dir"], f) for f in os.listdir(settings["image_dir"])]
     imgtype = settings["image_type"]
     callChannel = settings["spot_channel"]
+    channels = settings["channels"]
     
     model = piscis.Piscis(model_name=settings["model"]) # make piscis obj to reuse
     threshold = settings["piscis_thresh"] # piscis threshold parameter
@@ -327,30 +332,59 @@ def main():
         logger.info(f"Starting image {i}")
         j = _read_img(i, imgtype) # read image to np nd array
         jname = i.split("/")[len(i.split("/"))-1]
-         
-        channelDim = _get_channel_dim(j, len(settings["channels"])) # guesstimate the channel dimension
-        channelIdx = settings["channels"].index(settings["spot_channel"]) # get the index of the spot calling channel
-
-        index = [slice(None)] * j.ndim
-        index[channelDim] = channelIdx
         
-        j = j[tuple(index)] # index the array to just the channel for spot calling
-        
-        # call spots
-        pred_spots = _call_spots_piscis(model, j, threshold)
-        
-        # de-duplicate the spots called over all z slices
-        dedup_spots_neigh = _dedup_spots(pred_spots, j, settings["dedup_radius"])
-        dedup_spots = dedup_spots_neigh[1]
+        if len(channels) > 1:
+            channelDim = _get_channel_dim(j, len(channels)) # guesstimate the channel dimension
+            channelIdx = channels.index(settings["spot_channel"]) # get the index of the spot calling channel
 
-        if plot_all:
-            _interactive_plot(j, pred_spots, mode="all", outf=f"{plot_out_dir}/{jname}_interactivePlot_allDots_allZslices.html")
-        if plot_dedup:
-            _interactive_plot(_max_proj_image(j), dedup_spots, mode="dedup", outf=f"{plot_out_dir}/{jname}_interactivePlot_dedupDots_maxProj.html")
-        if plot_neighborhoods:
-            _interactive_plot(_max_proj_image(j), np.concatenate(pred_spots), mode="neighbors", outf=f"{plot_out_dir}/{jname}_interactivePlot_allDots_neighborhoods_maxProj.html", neighborhoods=dedup_spots_neigh[0])
-        exit(0)        
+            index = [slice(None)] * j.ndim
+            index[channelDim] = channelIdx
+        
+            j = j[tuple(index)] # index the array to just the channel for spot calling
+        
+        call_max = settings["call_max"]
+        is_maxProject = settings["is_maxProject"]
 
+        if call_max and not is_maxProject:
+            j_max = _max_proj_image(j)
+        
+            # call spots
+            pred_spots = _call_spots_piscis(model, j_max, threshold)
+
+            # plot
+            _interactive_plot(j_max, pred_spots, mode="dedup", outf=f"{plot_out_dir}/{jname}_interactivePlot_maxProj_allSpots.html")
+
+            # output
+            if not Path(settings["spot_out"]).is_dir():
+                Path(settings["spot_out"]).mkdir()
+            np.savetxt(f"{settings["spot_out"]}/{jname}_allCalledSpots.tsv", pred_spots, delimiter="\t")
+        
+        if is_maxProject:
+            # call spots
+            pred_spots = _call_spots_piscis(model, j, threshold)
+
+            # plot
+            _interactive_plot(j, pred_spots, mode="dedup", outf=f"{plot_out_dir}/{jname}_interactivePlot_maxProj_allSpots.html")
+
+            # output
+            if not Path(settings["spot_out"]).is_dir():
+                Path(settings["spot_out"]).mkdir()
+            np.savetxt(f"{settings["spot_out"]}/{jname}_allCalledSpots.tsv", pred_spots, delimiter="\t")
+
+        
+        else:
+            # de-duplicate the spots called over all z slices
+            dedup_spots_neigh = _dedup_spots(pred_spots, j, settings["dedup_radius"])
+            dedup_spots = dedup_spots_neigh[1]
+
+            if plot_all:
+                _interactive_plot(j, pred_spots, mode="all", outf=f"{plot_out_dir}/{jname}_interactivePlot_allDots_allZslices.html")
+            if plot_dedup:
+                _interactive_plot(_max_proj_image(j), dedup_spots, mode="dedup", outf=f"{plot_out_dir}/{jname}_interactivePlot_dedupDots_maxProj.html")
+            if plot_neighborhoods:
+                _interactive_plot(_max_proj_image(j), np.concatenate(pred_spots), mode="neighbors", outf=f"{plot_out_dir}/{jname}_interactivePlot_allDots_neighborhoods_maxProj.html", neighborhoods=dedup_spots_neigh[0])   
+        
+        exit(0)
 
 if __name__ == "__main__":
     main()
