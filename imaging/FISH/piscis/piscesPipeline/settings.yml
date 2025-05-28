@@ -1,21 +1,18 @@
-image_dir: "/mnt/data0/noah/analysis/CodeWorkbench/imaging/FISH/piscis/piscesPipeline/maxImg"                 # Path to directory holding images  
+image_dir: "/mnt/data0/noah/analysis/CodeWorkbench/imaging/FISH/piscis/piscesPipeline/img"                 # Path to directory holding images  
 image_type: "tif"             # Image filetype (nd2 or tiff/tif)
-is_maxProject: true           # are the images already max projected?
-call_max: true                # Call spots on maximum projected (Z) image [true]
-spot_out: "./called_spots"       # output directory for spots
+spot_out: "./called_spots"    # output directory for spots
 
 channels:                     # channels included in images (in order, 0th, 1st, 2nd, etc)
  - "A647"
-spot_channel: "A647"              # name of channel to call spots on (i.e. "Cy3")
-call_projection: false        # set to true to call spots on the max Z projection; set to false to call on all z slices independently (calling on max. projection skips deduplication step)
+spot_channel: "A647"          # name of channel to call spots on (i.e. "Cy3")
+stack: true                   # true if the image is a stack (Z stack), false otherwise 
 piscis_thresh: 1              # piscis spot calling threshold - make only small changes to this value [0..1]
+piscis_scale: 1                #
+piscis_min_distance: 1        #
 
 model: "20230905"             # name of the piscis model to use for spot calling
 
-dedup_radius: 1               # pixel radius of neigborhoods to dedup
-
-plot_all: true                # plot all dots on each z stack independently
-plot_neighborhoods: true     # plot all spots with detected neighborhoods indicated by blue lines
-plot_dedup: true              # plot all deduplicated dots on maximum projected z stack
-plot_out_dir: "."
+plot_max: true                # plot all dots on each z stack independently
+plot_z: true                  # plot all dots on their respective z levels        
+plot_out_dir: "."             # output directory for plots
 
