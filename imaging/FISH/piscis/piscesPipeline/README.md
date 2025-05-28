@@ -1,6 +1,6 @@
 ### Run Piscis in a Pipeline
 The python script `piscis_pipeline.py` will run the [piscis](https://github.com/zjniu/Piscis) spot-calling algorithm in a high-throughput manner givn a dataset of smFISH microscopy images in `nd2` or `tiff` format. \
-By default, spots are called on each Z-stack slice independently. Afterwards, clusters of spots are de-duplicated using sklearn's `NearestNeighbors` module to identify the clusters, and the brightest spot from each neighborhood is retained.
+Spots can be called on multi or single channel images as well as stacks of images or flat images.
 
 #### Usage
 Before running the pipeline, I suggest installing and activating the conda environment in the above directory - `imagingEnv.yml`. It contains all packages in correct versions needed to run it. \
@@ -22,35 +22,35 @@ The available arguments include:
   * **NOTE:** Please ensure the ordering of channels here is the same as it is in your image file, i.e. in the below example, channel 0 is "DAPI", channel 1 is "Cy3", and channel 2 is "A647".
 ##### Spot calling / de-duplication
 * `piscis_thresh`: The `threshold` parameter for the piscis model. It should not be changed much. Check [here](https://pmc.ncbi.nlm.nih.gov/articles/PMC10862914/) for more information.
+* `piscis_scale`: Piscis `scale` parameter
+* `piscis_min_distance`: Piscis `minimum_distance` parameter
 * `model`: The (string) representing the piscis model to be used. Only change if results are not looking good.
-* `dedup_radius`: Radius (in pixels) for neighborhood identification in the de-duplication step.
 * `spot_channel`: The name of the channel from the above list to be used to call spots.
 * `call_projection`: **TBA**
 ##### Plotting
-* `plot_all`: Boolean; Make an interactive plot of all dots on each Z-slice independently.
-* `plot_neighborhoods`: Boolean; Interactive plot of all spots on a Z-max-projected image with lines showing neighborhood membership.
-* `plot_dedup`: Boolean; Interactive plot of de-duplicated spots on max-projected image.
+* `plot_max`: Boolean; Make an interactive plot of all dots on the max-projected image.
+* `plot_z`: Boolean; Interactive plot of all dots on their respective Z-slices.
 * `plot_out_dir`: Directory to output interactive plots to in `html` format.
 
 A properly formatted `settings.yml` would look like:
 ```
-image_dir: "/path/to/images"                          
-image_type: "nd2"             
+image_dir: "/path/to/image.tif"              
+image_type: "tif"             
+spot_out: "./spots"   
 
-channels:                     
+channels:                   
+ - "A647"
  - "DAPI"
  - "Cy3"
- - "A647"
-spot_channel: "Cy3"    
-call_projection: false  # TBA!      
+spot_channel: "A647"        
+stack: true                   
 piscis_thresh: 1              
+piscis_scale: 1                
+piscis_min_distance: 1        
 
-model: "20230905"      
+model: "20230905"         
 
-dedup_radius: 1          
-
-plot_all: true        
-plot_neighborhoods: true    
-plot_dedup: true             
-plot_out_dir: "."
+plot_max: true             
+plot_z: true                    
+plot_out_dir: "."        
 ```
