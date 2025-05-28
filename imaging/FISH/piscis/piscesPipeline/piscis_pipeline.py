@@ -2,7 +2,6 @@
 import os
 from pathlib import Path
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
 # plotting
 import plotly.graph_objects as go
 from PIL import Image
@@ -92,7 +91,7 @@ def _max_proj_image(img):
     """
     return np.max(img, axis=0)
 
-def _call_spots_piscis(piscis_obj, img, threshold, max_proj=True):
+def _call_spots_piscis(piscis_obj, img, threshold, max_proj=True, stack=True):
     """
     Call spots on an image using the Piscis model.
     Arguments:
@@ -100,9 +99,9 @@ def _call_spots_piscis(piscis_obj, img, threshold, max_proj=True):
         img - (ndarray)         - the image to be analyzed
         threshold (int/float)   - piscis threshold model parameter
     """
-    logger.info("Starting spot detection...")
+    logger.info("Starting spot detection.")
     start = timer()
-    pred = piscis_obj.predict(img, threshold=1)
+    pred = piscis_obj.predict(img, threshold=1, stack=stack)
     
     elapsed = timedelta(seconds=timer()-start) # time
     if max_proj:
@@ -113,46 +112,6 @@ def _call_spots_piscis(piscis_obj, img, threshold, max_proj=True):
     logger.info(f"Finished calling spots; {num_spots} spots found in {elapsed}")
 
     return pred
-
-def _dedup_spots(spots, img, radius):
-    """
-    Deduplicate called spots via a nearest neighbors method
-    Arguments:
-        spots (list of lists)   - list of called spots for image img, with 1 sublist for each z slice
-        img (ndarray)           - image to be deduplicated
-        threshold (int/float)   - diameter in pixels for finding neighborhoods
-    """
-    logger.info(" Deduplicating called spots")
-    all_spots = np.concatenate(spots) # unnest the list for all z slices
-
-    # Nearest Neighbors 
-    nn = NearestNeighbors(radius=radius)
-    nn.fit(all_spots)
-    neighborhoods = nn.radius_neighbors(all_spots, return_distance=False)
-
-    # Max-project the image so we can find the brightest spots
-    img_mp = _max_proj_image(img)
-
-    # Now, select the brightest pixel in each neighborhood as the representative spot
-    ## TODO: Fix deduplication scheme
-    deduped_spots = []
-    seen = set()
-
-    for i, group in enumerate(neighborhoods):
-        # Skip if we've already handled a neighbor in this group
-        if any(j in seen for j in group):
-            continue
-
-        # Get intensities from max-projected image
-        intensities = [
-            img_mp[int(all_spots[j][0]), int(all_spots[j][1])] for j in group
-        ]
-        brightest_idx = group[np.argmax(intensities)]
-        deduped_spots.append(all_spots[brightest_idx])
-        seen.update(group)
-    
-    logging.info(f"{len(deduped_spots)} spots remain after deduplication.")
-    return (neighborhoods, np.array(deduped_spots))
 
 # Normalize and convert Z-slice to uint8
 def _normalize_to_uint8(slice_2d):
@@ -167,21 +126,18 @@ def _interactive_plot(img, spots, mode, outf, neighborhoods=None):
     Arguments:
         img (ndarray) - the image to be plotted
         spots (array) - the spots to be plotted
-        mode (str) - one of ['all', 'max', 'neighbors'], determines what is plotted
-            'all' - plots all dots on their respective z slices
-            'dedup' - plots deduplicated spots on a max z projection of img
-            'neighbors' - plots all dots on a max projection of img with lines denoting dots that were called as one neighborhood
+        mode (str) - one of ["stack", "max"], determines what is plotted
     """
     logger.info(f"Plotting detected spots with mode {mode}")
-    if mode == "all":
+    if mode == "stack":
         Z = img.shape[0]  # total number of z slices
         frames = []
         for z in range(Z):
             img_slice = _normalize_to_uint8(img[z]) # get the current z slice and normalize it to [0, 255]
 
-            coords_z = spots[z]  # extract the list with spots from current z slice
-            y = coords_z[:, 0]   # y coord
-            x = coords_z[:, 1]   # x coord
+            coords_z = spots[spots[:, 0] == z]  # filter spots at z
+            y = coords_z[:, 1]   # y coord
+            x = coords_z[:, 2]   # x coord
 
             frame = go.Frame(
                 data=[
@@ -199,16 +155,18 @@ def _interactive_plot(img, spots, mode, outf, neighborhoods=None):
 
             frames.append(frame)
         
-        # Add the first frame content
         fig = go.Figure(
             data=[
-                go.Heatmap(z=_normalize_to_uint8(img[0]), colorscale='gray', showscale=False),
+                go.Heatmap(
+                    z=_normalize_to_uint8(img[z]),
+                    colorscale='gray',
+                    showscale=False),
                 go.Scatter(
-                    x=spots[0][:, 1],
-                    y=spots[0][:, 0],
-                mode="markers",
-                marker=dict(color='red', size=5),
-                name='Spots')],
+                    x=coords_z[:, 2],  # X
+                    y=coords_z[:, 1],  # Y
+                    mode="markers",
+                    marker=dict(color='red', size=5),
+                    name='Spots')],
             frames=frames)
 
         # Add slider and play buttons
@@ -224,67 +182,11 @@ def _interactive_plot(img, spots, mode, outf, neighborhoods=None):
         fig.update_yaxes(autorange="reversed")  # Important for image-style orientation
         fig.write_html(outf)
 
-    if mode == "neighbors":
-        x = spots[:,1]
-        y = spots[:,0]
-        lines_x = []
-        lines_y = []
-        for i, nbrs in enumerate(neighborhoods):
-            for j in nbrs:
-                if i >= j:  # avoid duplicates
-                    continue
-                lines_x.extend([x[i], x[j], None])
-                lines_y.extend([y[i], y[j], None])
-        
-        img_slice = _normalize_to_uint8(img)
-
-        pil_img = Image.fromarray(img_slice)
-        buffer = BytesIO()
-        pil_img.save(buffer, format="PNG")
-        encoded = base64.b64encode(buffer.getvalue()).decode()
-
-        # Create figure with image background
-        fig = go.Figure()
-
-        # Add lines between neighbors
-        fig.add_trace(go.Scatter(
-            x=lines_x,
-            y=lines_y,
-            mode='lines',
-            line=dict(color='blue', width=1),
-            name='Neighbor Links'))
-
-        # Add spot markers
-        fig.add_trace(go.Scatter(
-            x=x,
-            y=y,
-            mode='markers',
-            marker=dict(color='rgba(255,0,0,1)', size=5),
-            name='Spots'))
-
-        # Overlay the image
-        fig.update_layout(
-            images=[dict(
-                source=f'data:image/png;base64,{encoded}',
-                xref="x", yref="y",
-                x=0, y=0,
-                sizex=img_slice.shape[1],  # X-axis size (width)
-                sizey=img_slice.shape[0],  # Y-axis size (height)
-                sizing="stretch",
-                opacity=1.0,
-                layer="below")],
-            height=700,
-            width=700,
-            title=f"Max-Z projection with Neighbors")
-
-        fig.update_yaxes(autorange='reversed')
-        fig.write_html(outf)
-
-    if mode == "dedup":
+    if mode == "max":
         vmin, vmax = np.percentile(img, (1, 99))  # or (0.5, 99.5) for more aggressive stretch
         img_slice = _normalize_to_uint8(img)
-        y = spots[:, 0]
-        x = spots[:, 1]
+        y = spots[:, 1]
+        x = spots[:, 2]
 
         fig = go.Figure()
 
@@ -325,11 +227,13 @@ def main():
     channels = settings["channels"]
     
     model = piscis.Piscis(model_name=settings["model"]) # make piscis obj to reuse
+    stack = settings["stack"]
     threshold = settings["piscis_thresh"] # piscis threshold parameter
+    scale = settings["piscis_scale"]
+    min_dist = settings["piscis_min_distance"]
 
-    plot_all = settings["plot_all"]
-    plot_dedup = settings["plot_dedup"]
-    plot_neighborhoods = settings["plot_neighborhoods"]
+    plot_max = settings["plot_max"]
+    plot_z = settings["plot_z"]
     plot_out_dir = settings["plot_out_dir"]
 
     # Main loop
@@ -338,63 +242,28 @@ def main():
         j = _read_img(i, imgtype) # read image to np nd array
         jname = i.split("/")[len(i.split("/"))-1]
         
-        if len(channels) > 1:
+        if len(channels) > 1: # if there is more than one channel, subset the image with the one we want 
             channelDim = _get_channel_dim(j, len(channels)) # guesstimate the channel dimension
-            channelIdx = channels.index(settings["spot_channel"]) # get the index of the spot calling channel
+            channelIdx = channels.index(callChannel) # get the index of the spot calling channel
 
             index = [slice(None)] * j.ndim
             index[channelDim] = channelIdx
         
             j = j[tuple(index)] # index the array to just the channel for spot calling
+    
+        # call spots
+        pred_spots = _call_spots_piscis(model, j, threshold, stack=stack)
+
+        # plot
+        if plot_max:
+            _interactive_plot(_max_proj_image(j), pred_spots, mode="max", outf=f"{plot_out_dir}/{jname}_interactivePlot_maxProj_allSpots.html")
+        if plot_z:
+            _interactive_plot(j, pred_spots, mode="stack", outf=f"{plot_out_dir}/{jname}_interactivePlot_zStack_allSpots.html")
         
-        call_max = settings["call_max"]
-        is_maxProject = settings["is_maxProject"]
-
-        if call_max and not is_maxProject: # if we are calling spots on a max projection AND the images passed are not max projections, we need to project them
-            logger.info("Max projecting image and calling spots")
-
-            j_max = _max_proj_image(j) # max project
-        
-            # call spots
-            pred_spots = _call_spots_piscis(model, j_max, threshold)
-
-            # plot
-            _interactive_plot(j_max, pred_spots, mode="dedup", outf=f"{plot_out_dir}/{jname}_interactivePlot_maxProj_allSpots.html")
-
-            # output
-            if not Path(settings["spot_out"]).is_dir():
-                Path(settings["spot_out"]).mkdir()
-            np.savetxt(f"{settings["spot_out"]}/{jname}_allCalledSpots.tsv", pred_spots, delimiter="\t")
-        
-        if is_maxProject: # if the images passed are already max projected, the only type of spot calling we can do is on the max projection
-            logger.info("Image is already max-projected, calling spots")
-
-            # call spots; no max projection
-            pred_spots = _call_spots_piscis(model, j, threshold)
-
-            # plot, type='dedup' for just dots on passed image
-            _interactive_plot(j, pred_spots, mode="dedup", outf=f"{plot_out_dir}/{jname}_interactivePlot_maxProj_allSpots.html")
-
-            # output
-            if not Path(settings["spot_out"]).is_dir():
-                Path(settings["spot_out"]).mkdir()
-            np.savetxt(f"{settings["spot_out"]}/{jname}_allCalledSpots.tsv", pred_spots, delimiter="\t")
-
-        
-        else: # the images are z stacks and we are calling on all z slices independently and then deduping them
-            logger.info("Calling spots on all X-slices independently, then deduplicating")
-
-            # de-duplicate the spots called over all z slices
-            pred_spots = _call_spots_piscis(model, j, threshold, max_proj=False)
-            dedup_spots_neigh = _dedup_spots(pred_spots, j, settings["dedup_radius"])
-            dedup_spots = dedup_spots_neigh[1]
-
-            if plot_all:
-                _interactive_plot(j, pred_spots, mode="all", outf=f"{plot_out_dir}/{jname}_interactivePlot_allDots_allZslices.html")
-            if plot_dedup:
-                _interactive_plot(_max_proj_image(j), dedup_spots, mode="dedup", outf=f"{plot_out_dir}/{jname}_interactivePlot_dedupDots_maxProj.html")
-            if plot_neighborhoods:
-                _interactive_plot(_max_proj_image(j), np.concatenate(pred_spots), mode="neighbors", outf=f"{plot_out_dir}/{jname}_interactivePlot_allDots_neighborhoods_maxProj.html", neighborhoods=dedup_spots_neigh[0])   
-
+        # output
+        if not Path(settings["spot_out"]).is_dir():
+            Path(settings["spot_out"]).mkdir()
+        np.savetxt(f"{settings["spot_out"]}/{jname}_allCalledSpots.tsv", pred_spots, delimiter="\t")
+      
 if __name__ == "__main__":
     main()
