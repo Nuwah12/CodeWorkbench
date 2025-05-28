@@ -26,7 +26,6 @@ The available arguments include:
 * `piscis_min_distance`: Piscis `minimum_distance` parameter
 * `model`: The (string) representing the piscis model to be used. Only change if results are not looking good.
 * `spot_channel`: The name of the channel from the above list to be used to call spots.
-* `call_projection`: **TBA**
 ##### Plotting
 * `plot_max`: Boolean; Make an interactive plot of all dots on the max-projected image.
 * `plot_z`: Boolean; Interactive plot of all dots on their respective Z-slices.
