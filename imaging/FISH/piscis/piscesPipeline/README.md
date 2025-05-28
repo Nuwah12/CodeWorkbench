@@ -1,6 +1,6 @@
 ### Run Piscis in a Pipeline
 The python script `piscis_pipeline.py` will run the [piscis](https://github.com/zjniu/Piscis) spot-calling algorithm in a high-throughput manner givn a dataset of smFISH microscopy images in `nd2` or `tiff` format. \
-By default, spots are called on each Z-stack slice independently. Afterwards, clusters of spots are de-duplicated using sklearn's `NearestNeighbors` module to identify the clusters, and the brightest spot from each neighborhood is retained.
+Spots can be called on multi or single channel images as well as stacks of images or flat images.
 
 #### Usage
 Before running the pipeline, I suggest installing and activating the conda environment in the above directory - `imagingEnv.yml`. It contains all packages in correct versions needed to run it. \
