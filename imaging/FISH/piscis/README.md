@@ -1,6 +1,18 @@
 ### Run Piscis in a Pipeline
 The python script `piscis_pipeline.py` will run the [piscis](https://github.com/zjniu/Piscis) spot-calling algorithm in a high-throughput manner givn a dataset of smFISH microscopy images in `nd2` or `tiff` format. \
-Spots can be called on multi or single channel images as well as stacks of images or flat images.
+Spots can be called on multi or single channel images as well as stacks of images or flat images. \
+
+#### File naming
+The pipeline expects both image and mask files to contain the prefix `Location_XX_`, i.e. `Location_01_`, `Location_02_`, etc. The numbers need not be increasing or in numerical order, but this prefix **_must_** match between image files and their corresponding mask files. \
+Example:
+```
+Image                        Mask
+-----                        ----   
+Location_01_A647_zStack.tif  Location_01_DAPI_MaxProj_cp_masks.tif 
+Location_02_A647_zStack.tif  Location_02_DAPI_MaxProj_cp_masks.tif
+Location_03_A647_zStack.tif  Location_03_DAPI_MaxProj_cp_masks.tif
+...
+```
 
 #### Usage
 Before running the pipeline, I suggest installing and activating the conda environment in the above directory - `imagingEnv.yml`. It contains all packages in correct versions needed to run it. \
@@ -11,9 +23,9 @@ conda activate bigfish
 ```
 To execute the pipeline, run
 ```
-python3 piscis_pipeline [-h] settings.yml
+python3 piscis_pipeline.py [-h] settings.yml
 ```
-The script takes one argument, the `settings.yml` file. All parameters related to spot calling and image processing are in this file - no other rcommand line arguments are needed. \
+The script takes one argument, the `settings.yml` file. All parameters related to spot calling and image processing are in this file - no other command line arguments are needed. \
 The available arguments include:
 ##### Image arguments
 * `image_dir`: Path to directory with image files. Please ensure the files to be analyzed are in one directory.
