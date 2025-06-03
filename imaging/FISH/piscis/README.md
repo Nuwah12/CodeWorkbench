@@ -23,7 +23,7 @@ To execute the pipeline, run
 ```
 python3 piscis_pipeline.py [-h] settings.yml
 ```
-The script takes one argument, the `settings.yml` file. All parameters related to spot calling and image processing are in this file - no other rcommand line arguments are needed. \
+The script takes one argument, the `settings.yml` file. All parameters related to spot calling and image processing are in this file - no other command line arguments are needed. \
 The available arguments include:
 ##### Image arguments
 * `image_dir`: Path to directory with image files. Please ensure the files to be analyzed are in one directory.
