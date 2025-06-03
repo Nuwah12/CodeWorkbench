@@ -3,7 +3,7 @@ The python script `piscis_pipeline.py` will run the [piscis](https://github.com/
 Spots can be called on multi or single channel images as well as stacks of images or flat images. \
 
 #### File naming
-The pipeline expects both image and mask files to contain the prefix `Location_XX`, i.e. `Location_01`, `Location_02`, etc. The numbers need not be increasing or in numerical order, but this prefix **_must_** match between image files and their corresponding mask files. \
+The pipeline expects both image and mask files to contain the prefix `Location_XX_`, i.e. `Location_01_`, `Location_02_`, etc. The numbers need not be increasing or in numerical order, but this prefix **_must_** match between image files and their corresponding mask files. \
 Example:
 ```
 Image                        Mask
