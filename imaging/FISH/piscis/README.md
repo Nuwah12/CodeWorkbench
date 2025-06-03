@@ -21,7 +21,7 @@ conda activate bigfish
 ```
 To execute the pipeline, run
 ```
-python3 piscis_pipeline [-h] settings.yml
+python3 piscis_pipeline.py [-h] settings.yml
 ```
 The script takes one argument, the `settings.yml` file. All parameters related to spot calling and image processing are in this file - no other rcommand line arguments are needed. \
 The available arguments include:
