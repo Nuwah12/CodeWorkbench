@@ -6,9 +6,11 @@ Spots can be called on multi or single channel images as well as stacks of image
 The pipeline expects both image and mask files to contain the prefix `Location_XX`, i.e. `Location_01`, `Location_02`, etc. The numbers need not be increasing or in numerical order, but this prefix **_must_** match between image files and their corresponding mask files. \
 Example:
 ```
-Location_01_DAPI_MaxProj_cp_masks.tif
-Location_02_DAPI_MaxProj_cp_masks.tif
-Location_03_DAPI_MaxProj_cp_masks.tif
+Image                        Mask
+-----                        ----   
+Location_01_A647_zStack.tif  Location_01_DAPI_MaxProj_cp_masks.tif 
+Location_02_A647_zStack.tif  Location_02_DAPI_MaxProj_cp_masks.tif
+Location_03_A647_zStack.tif  Location_03_DAPI_MaxProj_cp_masks.tif
 ...
 ```
 
