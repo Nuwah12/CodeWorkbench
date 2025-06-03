@@ -1,6 +1,16 @@
 ### Run Piscis in a Pipeline
 The python script `piscis_pipeline.py` will run the [piscis](https://github.com/zjniu/Piscis) spot-calling algorithm in a high-throughput manner givn a dataset of smFISH microscopy images in `nd2` or `tiff` format. \
-Spots can be called on multi or single channel images as well as stacks of images or flat images.
+Spots can be called on multi or single channel images as well as stacks of images or flat images. \
+
+#### File naming
+The pipeline expects both image and mask files to contain the prefix `Location_XX`, i.e. `Location_01`, `Location_02`, etc. The numbers need not be increasing or in numerical order, but this prefix **_must_** match between image files and their corresponding mask files. \
+Example:
+```
+Location_01_DAPI_MaxProj_cp_masks.tif
+Location_02_DAPI_MaxProj_cp_masks.tif
+Location_03_DAPI_MaxProj_cp_masks.tif
+...
+```
 
 #### Usage
 Before running the pipeline, I suggest installing and activating the conda environment in the above directory - `imagingEnv.yml`. It contains all packages in correct versions needed to run it. \
