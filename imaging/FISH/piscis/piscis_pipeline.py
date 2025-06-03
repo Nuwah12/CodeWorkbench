@@ -1,5 +1,6 @@
 # standard libs
 import os
+import re
 from pathlib import Path
 import numpy as np
 # plotting
@@ -87,7 +88,7 @@ def _checks(args):
 
 def _max_proj_image(img):
     """
-    Returns a masimum projection of the input image over all Z slices
+    Returns a maximum projection of the input image over all Z slices
     """
     return np.max(img, axis=0)
 
@@ -214,6 +215,30 @@ def _interactive_plot(img, spots, mode, outf, neighborhoods=None):
         fig.update_yaxes(autorange="reversed")
         fig.write_html(outf)
 
+def _pair_mask_img(img_paths, mask_paths):
+    """
+    Pair image and mask files.
+    """
+    mapping = {}
+    # First map Location_XX : mask filename
+    # Then loop through image files, split string to get Location_XX, and index mask dict with it to get path
+    # Add to dictionary {image_filename : mask_filename}
+    loc_map = {}
+    for m in mask_paths:
+        f = m.split("/")[len(m.split("/"))-1]
+        loc = f.split("_")
+        loc_map[f"{loc[0]}_{loc[1]}"] = m # map ID : mask path
+    
+    for i in img_paths:
+        f = i.split("/")[len(i.split("/"))-1]
+        loc = f.split("_")
+        mapping[i] = loc_map[f"{loc[0]}_{loc[1]}"]
+
+    return mapping
+
+def _mask_spots(mask, spots):
+    pass
+
 def main():
     """
     Main function. Gathers image files and arguments to perform spot calling.
@@ -225,7 +250,10 @@ def main():
     imgtype = settings["image_type"]
     callChannel = settings["spot_channel"]
     channels = settings["channels"]
-    
+
+    mask_dir = settings["mask_dir"]
+    mask_files = [os.path.join(mask_dir, f) for f in os.listdir(mask_dir)]
+
     model = piscis.Piscis(model_name=settings["model"]) # make piscis obj to reuse
     stack = settings["stack"]
     threshold = settings["piscis_thresh"] # piscis threshold parameter
@@ -235,10 +263,13 @@ def main():
     plot_max = settings["plot_max"]
     plot_z = settings["plot_z"]
     plot_out_dir = settings["plot_out_dir"]
-
+    
+    mask_mapping = _pair_mask_img(img_files, mask_files)
     # Main loop
-    for i in img_files:
+    for n,i in enumerate(img_files): # TODO: Now, we want to loop througn the {image : mask} dictionary
         logger.info(f"Starting image {i}")
+        #logger.info(f"Using mask file {mask_files[n]}")
+        exit(0)
         j = _read_img(i, imgtype) # read image to np nd array
         jname = i.split("/")[len(i.split("/"))-1]
         

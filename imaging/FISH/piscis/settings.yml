@@ -1,12 +1,11 @@
-image_dir: "/mnt/data0/noah/analysis/CodeWorkbench/imaging/FISH/piscis/piscesPipeline/20250508_RNA_FISH_Myla_ICOS"     # Path to directory holding images  
-image_type: "nd2"                    # Image filetype (nd2 or tiff/tif)
-spot_out: "./test_spots"                  # output directory for spots
+image_dir: "/mnt/data0/noah/analysis/FISH/Granta519/zStack"     # Path to directory holding images
+mask_dir: "/mnt/data0/noah/analysis/FISH/Granta519/mask"                         # path to the directory of masked cell images. ***It is assumed there is a one-to-one correspondence between data and masks!!!***
+image_type: "tiff"                    # Image filetype (nd2 or tiff/tif)
+spot_out: "./Granta_spots"                  # output directory for spots
 
 channels:                            # channels included in images (in order, 0th, 1st, 2nd, etc)
- - "DAPI"
- - "Cy3"
- - "GFP"
-spot_channel: "Cy3"                 # name of channel to call spots on (i.e. "Cy3")
+ - "A647"
+spot_channel: "A647"                 # name of channel to call spots on (i.e. "Cy3")
 stack: true                          # true if the image is a stack (Z stack), false otherwise 
 piscis_thresh: 1                     # piscis spot calling threshold - make only small changes to this value [0..1]
 piscis_scale: 1                      # piscis scale param
