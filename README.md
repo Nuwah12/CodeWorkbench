@@ -13,9 +13,9 @@ CodeWorkbench/
 ```
 
 #### Other repositories
-Not all of my code/projects at Penn are housed here. They can be found at:
 * https://github.com/faryabiLab/dockerize-workflows - Containerized, version controlled, and reproducible Next Generation Sequencing (NGS - RNAseq, ChIPseq, ATACseq) processing pipelines.
     * https://github.com/Nuwah12/Demo-RNAseq-Pipeline - Simple step-by-step RNA-seq processing pipeline written in Bash made as a teaching tool for non-computational colleagues.
+* https://github.com/Nuwah12/FISH-Spot-Calling - A simplistic workflow for calling spots on smRNA FISH images.
 * https://github.com/Nuwah12/GENOVA2 - A **fork** of the popular 3C data visualization R package [GENOVA](https://github.com/robinweide/GENOVA), with added options for applying normalization to contact matrices.
 * https://github.com/Nuwah12/EBV_Project - Code related to a project surrounding the interaction of an MCL cell line's genome with the Epstein-Barr Virus episome (coming soon, currently under construction).
  
