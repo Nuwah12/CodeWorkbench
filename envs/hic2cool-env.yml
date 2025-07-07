@@ -51,4 +51,4 @@ dependencies:
       - six==1.17.0
       - toolz==1.0.0
       - tzdata==2025.2
-prefix: /home/noah/.conda/envs/hic2cool-py39
+prefix: /home/noah/.conda/envs/mamba/envs/hic2cool-py39
